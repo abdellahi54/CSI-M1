@@ -1,0 +1,173 @@
+<mxfile host="app.diagrams.net" agent="Claude" version="24.0.0">
+  <diagram name="MPD Gestion Stages IDMC" id="mpd-v3">
+    <mxGraphModel dx="1800" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- ==================== UTILISATEUR ==================== -->
+        <mxCell id="t1" value="UTILISATEUR" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="500" y="40" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="t1a" value="PK identifiant : INT&#xa;   email : VARCHAR(255)&#xa;   mot_de_passe : VARCHAR(255)&#xa;   date_creation : DATE" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;" parent="t1" vertex="1">
+          <mxGeometry y="26" width="200" height="74" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ADMINISTRATEUR ==================== -->
+        <mxCell id="t2" value="ADMINISTRATEUR" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="280" y="40" width="180" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="t2a" value="PK FK identifiant_utilisateur : INT" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;" parent="t2" vertex="1">
+          <mxGeometry y="26" width="180" height="24" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== SECRETAIRE ==================== -->
+        <mxCell id="t3" value="SECRETAIRE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="740" y="40" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="t3a" value="PK FK identifiant_utilisateur : INT&#xa;      nom : VARCHAR(100)&#xa;      prenom : VARCHAR(100)&#xa;      en_conge : BOOLEAN" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;" parent="t3" vertex="1">
+          <mxGeometry y="26" width="200" height="74" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ENSEIGNANT_RESPONSABLE ==================== -->
+        <mxCell id="t4" value="ENSEIGNANT_RESPONSABLE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="460" y="180" width="230" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="t4a" value="PK FK identifiant_utilisateur : INT&#xa;      nom : VARCHAR(100)&#xa;      prenom : VARCHAR(100)&#xa;      droits_secretaire : BOOLEAN" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;" parent="t4" vertex="1">
+          <mxGeometry y="26" width="230" height="74" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ETUDIANT ==================== -->
+        <mxCell id="t5" value="ETUDIANT" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="760" y="180" width="220" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="t5a" value="PK FK identifiant_utilisateur : INT&#xa;      nom : VARCHAR(100)&#xa;      prenom : VARCHAR(100)&#xa;      num_etudiant : INT&#xa;      date_naissance : DATE&#xa;      formation : EnumFormation&#xa;      annee_formation : INT&#xa;      visibilite : BOOLEAN&#xa;      statut : EnumStatutEtudiant&#xa;      responsabilite_civile : BOOLEAN" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;" parent="t5" vertex="1">
+          <mxGeometry y="26" width="220" height="174" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ENTREPRISE ==================== -->
+        <mxCell id="t6" value="ENTREPRISE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="40" y="180" width="220" height="170" as="geometry"/>
+        </mxCell>
+        <mxCell id="t6a" value="PK identifiant : INT&#xa;   raison_sociale : VARCHAR(255)&#xa;   siret : BIGINT&#xa;   active : BOOLEAN&#xa;   date_creation_entreprise : DATE&#xa;   adresse : VARCHAR(500)&#xa;   forme_juridique : VARCHAR(100)&#xa;   date_derniere_offre : DATE" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;" parent="t6" vertex="1">
+          <mxGeometry y="26" width="220" height="144" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== OFFRE ==================== -->
+        <mxCell id="t7" value="OFFRE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="40" y="420" width="220" height="280" as="geometry"/>
+        </mxCell>
+        <mxCell id="t7a" value="PK identifiant : INT&#xa;FK identifiant_entreprise : INT&#xa;   type : EnumTypeOffre&#xa;   description : TEXT&#xa;   statut : EnumStatutOffre&#xa;   etat : EnumEtatOffre&#xa;   validation : BOOLEAN&#xa;   date_expiration : DATE&#xa;   date_debut : DATE&#xa;   duree : INT&#xa;   pays : VARCHAR(100)&#xa;   ville : VARCHAR(100)&#xa;   remuneration : DECIMAL(10,2)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;" parent="t7" vertex="1">
+          <mxGeometry y="26" width="220" height="254" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== CANDIDATURE ==================== -->
+        <mxCell id="t8" value="CANDIDATURE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="400" y="450" width="220" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="t8a" value="PK identifiant : INT&#xa;FK identifiant_offre : INT&#xa;FK identifiant_etudiant : INT&#xa;   date_candidature : DATE&#xa;   statut : EnumStatutCandidature" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;" parent="t8" vertex="1">
+          <mxGeometry y="26" width="220" height="94" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== DOCUMENT ==================== -->
+        <mxCell id="t9" value="DOCUMENT" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="760" y="450" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="t9a" value="PK identifiant : INT&#xa;FK identifiant_etudiant : INT&#xa;   nom_fichier : VARCHAR(255)&#xa;   type : EnumTypeDoc" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;" parent="t9" vertex="1">
+          <mxGeometry y="26" width="200" height="74" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== BAREME_REMUNERATION ==================== -->
+        <mxCell id="t10" value="BAREME_REMUNERATION" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#b1ddf0;strokeColor=#10739e;dashed=1;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="760" y="610" width="200" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="t10a" value="PK identifiant : INT&#xa;   type_offre : EnumTypeOffre&#xa;   duree_min : INT&#xa;   duree_max : INT&#xa;   montant_minimal : DECIMAL(10,2)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;" parent="t10" vertex="1">
+          <mxGeometry y="26" width="200" height="94" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ARCHIVE_OFFRE ==================== -->
+        <mxCell id="t11" value="ARCHIVE_OFFRE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="40" y="760" width="200" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="t11a" value="PK identifiant : INT&#xa;   description : TEXT&#xa;   statut : EnumStatutOffre&#xa;   date_depot : DATE&#xa;   date_archivage : DATE&#xa;   raison_sociale : VARCHAR(255)" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;" parent="t11" vertex="1">
+          <mxGeometry y="26" width="200" height="114" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ARCHIVE_ENTREPRISE ==================== -->
+        <mxCell id="t12" value="ARCHIVE_ENTREPRISE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontSize=12;" parent="1" vertex="1">
+          <mxGeometry x="280" y="760" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="t12a" value="PK identifiant : INT&#xa;   raison_sociale : VARCHAR(255)&#xa;   siret : BIGINT&#xa;   date_archivage : DATE" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;" parent="t12" vertex="1">
+          <mxGeometry y="26" width="200" height="74" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== RELATIONS ==================== -->
+        
+        <!-- Admin -> Utilisateur -->
+        <mxCell id="r1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;html=1;endArrow=none;strokeWidth=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="t2" target="t1" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Secretaire -> Utilisateur -->
+        <mxCell id="r2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;html=1;endArrow=none;strokeWidth=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="t3" target="t1" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Enseignant -> Utilisateur -->
+        <mxCell id="r3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;html=1;endArrow=none;strokeWidth=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="t4" target="t1" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Etudiant -> Utilisateur -->
+        <mxCell id="r4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;html=1;endArrow=none;strokeWidth=1;exitX=0;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=1;entryDx=0;entryDy=0;" parent="1" source="t5" target="t1" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Offre -> Entreprise -->
+        <mxCell id="r5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;html=1;endArrow=none;strokeWidth=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="t7" target="t6" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="r5a" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;" parent="r5" vertex="1" connectable="0">
+          <mxGeometry x="-0.8" relative="1" as="geometry"><mxPoint x="-10" as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="r5b" value="N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;" parent="r5" vertex="1" connectable="0">
+          <mxGeometry x="0.8" relative="1" as="geometry"><mxPoint x="-10" as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Candidature -> Offre -->
+        <mxCell id="r6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;html=1;endArrow=none;strokeWidth=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="t8" target="t7" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="r6a" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;" parent="r6" vertex="1" connectable="0">
+          <mxGeometry x="0.8" relative="1" as="geometry"><mxPoint y="-10" as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="r6b" value="N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;" parent="r6" vertex="1" connectable="0">
+          <mxGeometry x="-0.8" relative="1" as="geometry"><mxPoint y="-10" as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Candidature -> Etudiant -->
+        <mxCell id="r7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;html=1;endArrow=none;strokeWidth=1;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;" parent="1" source="t8" target="t5" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="r7a" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;" parent="r7" vertex="1" connectable="0">
+          <mxGeometry x="0.8" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="r7b" value="N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;" parent="r7" vertex="1" connectable="0">
+          <mxGeometry x="-0.8" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Document -> Etudiant -->
+        <mxCell id="r8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;html=1;endArrow=none;strokeWidth=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="t9" target="t5" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="r8a" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;" parent="r8" vertex="1" connectable="0">
+          <mxGeometry x="-0.8" relative="1" as="geometry"><mxPoint x="10" as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="r8b" value="N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=11;" parent="r8" vertex="1" connectable="0">
+          <mxGeometry x="0.8" relative="1" as="geometry"><mxPoint x="10" as="offset"/></mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

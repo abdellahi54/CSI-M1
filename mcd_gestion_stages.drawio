@@ -1,0 +1,203 @@
+<mxfile host="app.diagrams.net" agent="Claude" version="24.0.0">
+  <diagram name="MCD Gestion Stages IDMC" id="mcd-stages-idmc">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        
+        <!-- ==================== UTILISATEUR ==================== -->
+        <mxCell id="2" value="UTILISATEUR" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="560" y="40" width="200" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="3" value="+ identifiant : INT «PK»&#xa;+ email : STRING&#xa;+ mot_de_passe : STRING&#xa;+ date_creation : DATE&#xa;+ role : EnumRole" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;fontSize=12;" parent="2" vertex="1">
+          <mxGeometry y="30" width="200" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ADMINISTRATEUR ==================== -->
+        <mxCell id="4" value="ADMINISTRATEUR" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="280" y="40" width="180" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="5" value="(hérite de Utilisateur)" style="text;strokeColor=none;fillColor=none;align=center;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;fontStyle=2;" parent="4" vertex="1">
+          <mxGeometry y="30" width="180" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== SECRETAIRE ==================== -->
+        <mxCell id="6" value="SECRETAIRE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="860" y="40" width="180" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="7" value="+ nom : STRING&#xa;+ prenom : STRING&#xa;+ en_conge : BOOLEAN" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=12;" parent="6" vertex="1">
+          <mxGeometry y="30" width="180" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ENSEIGNANT RESPONSABLE ==================== -->
+        <mxCell id="8" value="ENSEIGNANT_RESPONSABLE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="520" y="220" width="240" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="9" value="+ nom : STRING&#xa;+ prenom : STRING&#xa;+ date_creation : DATE&#xa;+ droits_secretaire : BOOLEAN" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=12;" parent="8" vertex="1">
+          <mxGeometry y="30" width="240" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ETUDIANT ==================== -->
+        <mxCell id="10" value="ETUDIANT" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="880" y="220" width="200" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="11" value="+ num_etudiant : INT&#xa;+ nom : STRING&#xa;+ prenom : STRING&#xa;+ date_naissance : DATE&#xa;+ formation : EnumFormation&#xa;+ annee_formation : INT&#xa;+ visibilite : BOOLEAN&#xa;+ statut : EnumStatutEtudiant" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=12;" parent="10" vertex="1">
+          <mxGeometry y="30" width="200" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ENTREPRISE ==================== -->
+        <mxCell id="12" value="ENTREPRISE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="40" y="220" width="220" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="13" value="+ raison_sociale : STRING&#xa;+ SIRET : INT&#xa;+ active : BOOLEAN&#xa;+ date_creation : DATE&#xa;+ adresse : STRING&#xa;+ forme_juridique : STRING&#xa;+ date_derniere_offre : DATE" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=12;" parent="12" vertex="1">
+          <mxGeometry y="30" width="220" height="150" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== OFFRE ==================== -->
+        <mxCell id="14" value="OFFRE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="40" y="480" width="220" height="260" as="geometry"/>
+        </mxCell>
+        <mxCell id="15" value="+ identifiant : INT «PK»&#xa;+ type : EnumTypeOffre&#xa;+ description : STRING&#xa;+ statut : EnumStatutOffre&#xa;+ etat : EnumEtatOffre&#xa;+ validation : BOOLEAN&#xa;+ date_expiration : DATE&#xa;+ date_debut : DATE&#xa;+ duree : INT (mois)&#xa;+ pays : STRING&#xa;+ ville : STRING&#xa;+ remuneration : DECIMAL&#xa;+ niveau_vise : EnumFormation" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=12;" parent="14" vertex="1">
+          <mxGeometry y="30" width="220" height="230" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== CANDIDATURE ==================== -->
+        <mxCell id="16" value="CANDIDATURE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="520" y="500" width="220" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="17" value="+ identifiant : INT «PK»&#xa;+ date_candidature : DATE&#xa;+ statut : EnumStatutCandidature&#xa;+ justification_renonce : STRING&#xa;+ date_relance : DATE" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=12;" parent="16" vertex="1">
+          <mxGeometry y="30" width="220" height="110" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== DOCUMENT ==================== -->
+        <mxCell id="18" value="DOCUMENT" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#f5f5f5;strokeColor=#666666;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="880" y="480" width="200" height="150" as="geometry"/>
+        </mxCell>
+        <mxCell id="19" value="+ identifiant : INT «PK»&#xa;+ type : EnumTypeDoc&#xa;+ nom_fichier : STRING&#xa;+ date_depot : DATE&#xa;+ valide : BOOLEAN&#xa;+ date_validation : DATE" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=12;" parent="18" vertex="1">
+          <mxGeometry y="30" width="200" height="120" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== BAREME REMUNERATION ==================== -->
+        <mxCell id="20" value="BAREME_REMUNERATION&#xa;« Table de référence »" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=45;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#b1ddf0;strokeColor=#10739e;dashed=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="40" y="800" width="220" height="170" as="geometry"/>
+        </mxCell>
+        <mxCell id="21" value="+ identifiant : INT «PK»&#xa;+ type_offre : EnumTypeOffre&#xa;+ age_min : INT&#xa;+ age_max : INT&#xa;+ annee_formation : INT&#xa;+ montant_minimal : DECIMAL&#xa;+ date_application : DATE" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=12;" parent="20" vertex="1">
+          <mxGeometry y="45" width="220" height="125" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ARCHIVE OFFRE ==================== -->
+        <mxCell id="22" value="ARCHIVE_OFFRE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="320" y="800" width="250" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="23" value="+ identifiant : INT «PK»&#xa;+ description : STRING&#xa;+ type : EnumTypeOffre&#xa;+ statut : EnumStatutOffre&#xa;+ date_depot : DATE&#xa;+ date_archivage : DATE&#xa;+ raison_sociale_entreprise : STRING&#xa;+ siret_entreprise : INT&#xa;+ nom_etudiant_attribue : STRING&#xa;+ prenom_etudiant_attribue : STRING" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=12;" parent="22" vertex="1">
+          <mxGeometry y="30" width="250" height="190" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ARCHIVE ENTREPRISE ==================== -->
+        <mxCell id="24" value="ARCHIVE_ENTREPRISE" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#f5f5f5;strokeColor=#666666;dashed=1;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="620" y="800" width="220" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="25" value="+ raison_sociale : STRING&#xa;+ SIRET : INT&#xa;+ date_archivage : DATE" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=12;" parent="24" vertex="1">
+          <mxGeometry y="30" width="220" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== ENUMERATIONS ==================== -->
+        <mxCell id="26" value="ENUMERATIONS" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=0;marginBottom=0;fillColor=#e6e6e6;strokeColor=#999999;fontSize=14;" parent="1" vertex="1">
+          <mxGeometry x="900" y="700" width="280" height="270" as="geometry"/>
+        </mxCell>
+        <mxCell id="27" value="EnumTypeOffre:&#xa;  Stage | Alternance | CDD&#xa;&#xa;EnumStatutOffre:&#xa;  Active | NonActive&#xa;&#xa;EnumEtatOffre:&#xa;  Valide | NonValide | EnAttenteValidation&#xa;&#xa;EnumStatutCandidature:&#xa;  Soumise | Annulée | AcceptéeEntreprise&#xa;  RejetéeEntreprise | Validée | Renoncée&#xa;&#xa;EnumFormation:&#xa;  Miage | TAL | SciencesCognitives&#xa;&#xa;EnumTypeDoc:&#xa;  CV | ResponsabiliteCivile" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;fontSize=11;" parent="26" vertex="1">
+          <mxGeometry y="30" width="280" height="240" as="geometry"/>
+        </mxCell>
+
+        <!-- ==================== RELATIONS ==================== -->
+        
+        <!-- Héritage Admin -> Utilisateur -->
+        <mxCell id="30" style="endArrow=block;endSize=16;endFill=0;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;" parent="1" source="4" target="2" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Héritage Secretaire -> Utilisateur -->
+        <mxCell id="31" style="endArrow=block;endSize=16;endFill=0;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;" parent="1" source="6" target="2" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Héritage Enseignant -> Utilisateur -->
+        <mxCell id="32" style="endArrow=block;endSize=16;endFill=0;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeWidth=2;" parent="1" source="8" target="2" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Héritage Etudiant -> Utilisateur -->
+        <mxCell id="33" style="endArrow=block;endSize=16;endFill=0;html=1;rounded=0;exitX=0;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=1;entryDx=0;entryDy=0;strokeWidth=2;" parent="1" source="10" target="2" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Relation PROPOSE: Entreprise -> Offre -->
+        <mxCell id="40" value="" style="endArrow=none;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" parent="1" source="12" target="14" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="41" value="PROPOSE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontStyle=1;" parent="40" vertex="1" connectable="0">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="42" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" parent="40" vertex="1" connectable="0">
+          <mxGeometry x="-0.8" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="43" value="0..N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" parent="40" vertex="1" connectable="0">
+          <mxGeometry x="0.8" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Relation CORRESPOND: Offre -> Candidature -->
+        <mxCell id="50" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;" parent="1" source="14" target="16" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="51" value="CORRESPOND" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontStyle=1;" parent="50" vertex="1" connectable="0">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="52" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" parent="50" vertex="1" connectable="0">
+          <mxGeometry x="-0.8" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="53" value="0..N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" parent="50" vertex="1" connectable="0">
+          <mxGeometry x="0.8" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Relation POSTULE: Etudiant -> Candidature -->
+        <mxCell id="60" value="" style="endArrow=none;html=1;rounded=0;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" parent="1" source="10" target="16" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="61" value="POSTULE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontStyle=1;" parent="60" vertex="1" connectable="0">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="62" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" parent="60" vertex="1" connectable="0">
+          <mxGeometry x="-0.8" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="63" value="0..N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" parent="60" vertex="1" connectable="0">
+          <mxGeometry x="0.8" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Relation POSSEDE: Etudiant -> Document -->
+        <mxCell id="70" value="" style="endArrow=none;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;" parent="1" source="10" target="18" edge="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="71" value="POSSEDE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;fontStyle=1;" parent="70" vertex="1" connectable="0">
+          <mxGeometry relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="72" value="1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" parent="70" vertex="1" connectable="0">
+          <mxGeometry x="-0.8" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+        <mxCell id="73" value="0..N" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=12;" parent="70" vertex="1" connectable="0">
+          <mxGeometry x="0.8" relative="1" as="geometry"><mxPoint as="offset"/></mxGeometry>
+        </mxCell>
+
+        <!-- Note Barème -->
+        <mxCell id="80" value="⚠️ Le Barème est une TABLE DE REFERENCE&#xa;consultée par le CODE METIER pour valider&#xa;les offres. Pas de FK directe." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;size=20;align=left;spacingLeft=10;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="40" y="990" width="280" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Note Archives -->
+        <mxCell id="81" value="📦 Les tables ARCHIVE contiennent des&#xa;données DENORMALISEES (copie des infos&#xa;entreprise/étudiant pour l'historique)" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#f5f5f5;strokeColor=#666666;size=20;align=left;spacingLeft=10;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="380" y="1040" width="280" height="70" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
