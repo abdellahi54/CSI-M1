@@ -61,27 +61,63 @@ router.get('/pending/all', authMiddleware, withRole, async (req, res) => {
 // POST - Créer une offre (par entreprise)
 router.post('/', authMiddleware, withRole, async (req, res) => {
     try {
+        // Vérification du rôle
+        if (req.userRole !== 'ENTREPRISE') {
+            return res.status(403).json({ error: 'Accès refusé. Seules les entreprises peuvent créer des offres.' });
+        }
+
         const {
-            type, description, remuneration, pays, duree,
-            date_debut, niveau_vise, competences
+            type,
+            description,
+            remuneration,
+            pays,
+            ville,
+            duree,
+            date_debut,
+            date_expiration
         } = req.body;
+
+        // Validation basique des champs obligatoires
+        if (!type || !description || !remuneration || !pays || !duree || !date_debut || !date_expiration) {
+            return res.status(400).json({ error: 'Tous les champs obligatoires doivent être remplis' });
+        }
 
         const result = await req.dbClient.query(`
             INSERT INTO offre (
-                entreprise_id, type, description, remuneration, pays, 
-                duree, date_debut, niveau_vise, competences, etat
+                entreprise_id, 
+                type, 
+                description, 
+                remuneration, 
+                pays, 
+                ville,
+                duree, 
+                date_debut, 
+                date_expiration,
+                statut, 
+                etat
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'EnAttenteValidation')
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'ACTIVE', 'EN ATTENTE DE VALIDATION')
             RETURNING id
-        `, [req.userId, type, description, remuneration, pays, duree, date_debut, niveau_vise, competences]);
+        `, [
+            req.userId,
+            type,
+            description,
+            remuneration,
+            pays,
+            ville,
+            duree,
+            date_debut,
+            date_expiration
+        ]);
 
         res.status(201).json({
             message: 'Offre créée et en attente de validation',
             id: result.rows[0].id
         });
+
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Erreur création offre', details: err.message });
+        console.error('Erreur création offre:', err);
+        res.status(500).json({ error: 'Erreur lors de la création de l\'offre', details: err.message });
     }
 });
 
@@ -113,12 +149,52 @@ router.get('/entreprise/mine', authMiddleware, withRole, async (req, res) => {
         const result = await req.dbClient.query(`
             SELECT * FROM offre 
             WHERE entreprise_id = $1
-            ORDER BY date_creation DESC
+            ORDER BY id DESC
         `, [req.userId]);
         res.json(result.rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
+// PATCH - Modifier le statut d'une offre (par entreprise uniquement)
+router.patch('/:id/statut', authMiddleware, withRole, async (req, res) => {
+    try {
+        // Vérification du rôle
+        if (req.userRole !== 'ENTREPRISE') {
+            return res.status(403).json({ error: 'Accès refusé. Seules les entreprises peuvent modifier leurs offres.' });
+        }
+
+        const { id } = req.params;
+        const { statut } = req.body;
+
+        // Validation du statut (Enum: ACTIVE, NON ACTIVE)
+        if (!['ACTIVE', 'NON ACTIVE'].includes(statut)) {
+            return res.status(400).json({ error: 'Statut invalide. Doit être ACTIVE ou NON ACTIVE.' });
+        }
+
+        // Vérifier que l'offre appartient bien à l'entreprise
+        const checkOwner = await req.dbClient.query(
+            'SELECT id FROM offre WHERE id = $1 AND entreprise_id = $2',
+            [id, req.userId]
+        );
+
+        if (checkOwner.rows.length === 0) {
+            return res.status(404).json({ error: 'Offre non trouvée ou accès non autorisé' });
+        }
+
+        // Mise à jour du statut UNIQUEMENT (ne touche pas à l'état de validation)
+        await req.dbClient.query(
+            'UPDATE offre SET statut = $1 WHERE id = $2',
+            [statut, id]
+        );
+
+        res.json({ message: `Statut de l'offre mis à jour vers ${statut}` });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur lors de la mise à jour du statut', details: err.message });
     }
 });
 

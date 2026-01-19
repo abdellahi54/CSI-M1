@@ -19,7 +19,7 @@ const etudiantsRoutes = require('./routes/etudiants');
 const authRoutes = require('./routes/auth');
 const testRoutes = require('./routes/test');
 const adminRoutes = require('./routes/admin');
-const enseignantRoutes = require('./routes/enseignant');
+// const enseignantRoutes = require('./routes/enseignant'); // Désactivé temporairement car cause des erreurs de schéma
 const offresRoutes = require('./routes/offres');
 const candidaturesRoutes = require('./routes/candidatures');
 
@@ -28,7 +28,7 @@ app.use('/api/etudiants', etudiantsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/enseignant', enseignantRoutes);
+// app.use('/api/enseignant', enseignantRoutes);
 app.use('/api/offres', offresRoutes);
 app.use('/api/candidatures', candidaturesRoutes);
 
