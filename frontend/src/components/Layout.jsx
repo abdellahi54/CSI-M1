@@ -13,31 +13,31 @@ function Layout({ children, title }) {
 
     const menuItems = {
         'ADMIN': [
-            { label: '👩‍💼 Secrétaires', path: '/admin' },
-            { label: '👨‍🏫 Enseignants', path: '/admin' }
+            { label: 'Secrétaires', path: '/admin' },
+            { label: 'Enseignants', path: '/admin' }
         ],
         'SECRETAIRE': [
-            { label: '👨‍🎓 Étudiants', path: '/secretaire' },
-            { label: '📄 Attestations RC', path: '/secretaire' }
+            { label: 'Étudiants', path: '/secretaire' },
+            { label: 'Attestations RC', path: '/secretaire' }
         ],
         'ENSEIGNANT RESPONSABLE': [
-            { label: '📋 Offres', path: '/enseignant' },
-            { label: '✅ Candidatures', path: '/enseignant' }
+            { label: 'Offres', path: '/enseignant' },
+            { label: 'Candidatures', path: '/enseignant' }
         ],
         'ETUDIANT': [
-            { label: '🔍 Offres', path: '/etudiant' },
-            { label: '📝 Mes candidatures', path: '/etudiant' }
+            { label: 'Offres', path: '/etudiant' },
+            { label: 'Mes candidatures', path: '/etudiant' }
         ],
         'ENTREPRISE': [
-            { label: '📋 Mes offres', path: '/entreprise' },
-            { label: '👥 Candidatures reçues', path: '/entreprise' }
+            { label: 'Mes offres', path: '/entreprise' },
+            { label: 'Candidatures reçues', path: '/entreprise' }
         ]
     };
 
     return (
         <div className="layout">
             <header>
-                <h1>🎓 {title || 'Gestion des Stages IDMC'}</h1>
+                <h1>{title || 'Gestion des Stages IDMC'}</h1>
                 <nav>
                     <span className="user-info">
                         {user?.prenom} {user?.nom} ({user?.role})

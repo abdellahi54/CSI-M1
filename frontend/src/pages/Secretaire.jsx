@@ -78,13 +78,13 @@ function Secretaire() {
                     className={activeTab === 'etudiants' ? 'active' : ''}
                     onClick={() => setActiveTab('etudiants')}
                 >
-                    👨‍🎓 Étudiants ({etudiants.length})
+                    Étudiants ({etudiants.length})
                 </button>
                 <button
                     className={activeTab === 'attestations' ? 'active' : ''}
                     onClick={() => setActiveTab('attestations')}
                 >
-                    📄 Attestations RC ({etudiantsSansRC.length})
+                    Attestations RC ({etudiantsSansRC.length})
                 </button>
             </div>
 
@@ -119,11 +119,11 @@ function Secretaire() {
                                         <td>{etudiant.formation}</td>
                                         <td>{etudiant.annee_formation}</td>
                                         <td className={etudiant.responsabilite_civile ? 'status-valid' : 'status-pending'}>
-                                            {etudiant.responsabilite_civile ? '✅' : '⏳'}
+                                            {etudiant.responsabilite_civile ? 'Oui' : 'Non'}
                                         </td>
                                         <td>
                                             <button className="btn-delete" onClick={() => handleDelete(etudiant.id)}>
-                                                🗑️
+                                                Supprimer
                                             </button>
                                         </td>
                                     </tr>
@@ -157,10 +157,10 @@ function Secretaire() {
                                         <td>{etudiant.nom}</td>
                                         <td>{etudiant.prenom}</td>
                                         <td>{etudiant.num_etudiant}</td>
-                                        <td className="status-pending">⏳ En attente</td>
+                                        <td className="status-pending">En attente</td>
                                         <td>
                                             <button className="btn-validate" onClick={() => handleValiderRC(etudiant.id)}>
-                                                ✅ Valider
+                                                Valider
                                             </button>
                                         </td>
                                     </tr>

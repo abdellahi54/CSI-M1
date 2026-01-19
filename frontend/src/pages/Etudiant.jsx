@@ -63,12 +63,12 @@ function Etudiant() {
 
     const getStatusLabel = (statut) => {
         const labels = {
-            'Soumise': { text: '📤 Soumise', class: 'status-pending' },
-            'AccepteeEntreprise': { text: '✅ Acceptée entreprise', class: 'status-valid' },
-            'RejeteeEntreprise': { text: '❌ Rejetée entreprise', class: 'status-rejected' },
-            'Validee': { text: '🎉 Validée', class: 'status-valid' },
-            'RefuseeResponsable': { text: '❌ Refusée', class: 'status-rejected' },
-            'Annulee': { text: '🚫 Annulée', class: 'status-cancelled' }
+            'Soumise': { text: 'Soumise', class: 'status-pending' },
+            'AccepteeEntreprise': { text: 'Acceptée entreprise', class: 'status-valid' },
+            'RejeteeEntreprise': { text: 'Rejetée entreprise', class: 'status-rejected' },
+            'Validee': { text: 'Validée', class: 'status-valid' },
+            'RefuseeResponsable': { text: 'Refusée', class: 'status-rejected' },
+            'Annulee': { text: 'Annulée', class: 'status-cancelled' }
         };
         return labels[statut] || { text: statut, class: '' };
     };
@@ -84,13 +84,13 @@ function Etudiant() {
                     className={activeTab === 'offres' ? 'active' : ''}
                     onClick={() => setActiveTab('offres')}
                 >
-                    🔍 Offres disponibles ({offres.length})
+                    Offres disponibles ({offres.length})
                 </button>
                 <button
                     className={activeTab === 'candidatures' ? 'active' : ''}
                     onClick={() => setActiveTab('candidatures')}
                 >
-                    📝 Mes candidatures ({candidatures.length})
+                    Mes candidatures ({candidatures.length})
                 </button>
             </div>
 
@@ -110,12 +110,12 @@ function Etudiant() {
                                 <h3>{offre.entreprise_nom}</h3>
                                 <p className="offre-description">{offre.description?.substring(0, 150)}...</p>
                                 <div className="offre-details">
-                                    <span>📍 {offre.pays}</span>
-                                    <span>💰 {offre.remuneration}€/mois</span>
+                                    <span>Lieu: {offre.pays}</span>
+                                    <span>{offre.remuneration}€/mois</span>
                                 </div>
                                 <div className="offre-actions">
                                     {alreadyApplied(offre.id) ? (
-                                        <span className="already-applied">✅ Déjà postulé</span>
+                                        <span className="already-applied">Déjà postulé</span>
                                     ) : (
                                         <button className="btn-primary" onClick={() => handlePostuler(offre)}>
                                             Postuler

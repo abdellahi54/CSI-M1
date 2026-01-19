@@ -76,13 +76,13 @@ function Admin() {
                     className={activeTab === 'secretaires' ? 'active' : ''}
                     onClick={() => setActiveTab('secretaires')}
                 >
-                    👩‍💼 Secrétaires ({secretaires.length})
+                    Secrétaires ({secretaires.length})
                 </button>
                 <button
                     className={activeTab === 'enseignants' ? 'active' : ''}
                     onClick={() => setActiveTab('enseignants')}
                 >
-                    👨‍🏫 Enseignants ({enseignants.length})
+                    Enseignants ({enseignants.length})
                 </button>
             </div>
 
@@ -112,8 +112,8 @@ function Admin() {
                                 <td>{item.email}</td>
                                 <td>
                                     {activeTab === 'secretaires'
-                                        ? (item.en_conge ? '🏖️ Oui' : '✅ Non')
-                                        : (item.droits_secretaire ? '✅ Oui' : '❌ Non')
+                                        ? (item.en_conge ? 'Oui' : 'Non')
+                                        : (item.droits_secretaire ? 'Oui' : 'Non')
                                     }
                                 </td>
                                 <td>
@@ -121,7 +121,7 @@ function Admin() {
                                         className="btn-delete"
                                         onClick={() => handleDelete(activeTab.slice(0, -1), item.id)}
                                     >
-                                        🗑️
+                                        Supprimer
                                     </button>
                                 </td>
                             </tr>
