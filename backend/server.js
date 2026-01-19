@@ -1,6 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const { connectDB } = require('./shared/utils/db');
+
+// Connexion à la base de données
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,17 +13,18 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+
 // Routes de base
 app.get('/', (req, res) => {
     res.json({ message: 'API Gestion Stages IDMC - OK' });
 });
 
 // Import des routes
-// const authRoutes = require('./routes/auth');
-// const offresRoutes = require('./routes/offres');
+const authRoutes = require('./modules/auth/auth.routes');
+// const offresRoutes = require('./routes/offres'); 
 // const candidaturesRoutes = require('./routes/candidatures');
 
-// app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 // app.use('/api/offres', offresRoutes);
 // app.use('/api/candidatures', candidaturesRoutes);
 
