@@ -71,7 +71,9 @@ export const getEnseignantProfil = () => api.get('/enseignant/profil');
 export const updateEnseignantProfil = (data) => api.put('/enseignant/profil', data);
 
 // Enseignant - Offres
+// Offres pour enseignant
 export const getOffresEnAttente = () => api.get('/enseignant/offres');
+export const getToutesLesOffres = () => api.get('/offres/all/offers');
 export const getToutesOffres = () => api.get('/enseignant/offres/toutes');
 export const validerOffre = (id) => api.put(`/enseignant/offres/${id}/valider`);
 export const refuserOffre = (id, motif) => api.put(`/enseignant/offres/${id}/refuser`, { motif });
