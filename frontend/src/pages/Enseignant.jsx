@@ -12,7 +12,15 @@ import {
     deleteBareme,
     getEnseignantStats,
     getEnseignantProfil,
-    updateEnseignantProfil
+    updateEnseignantProfil,
+    getDroitsSecretaire,
+    getEtudiantsEnseignant,
+    createEtudiantEnseignant,
+    validerRCEnseignant,
+    getNotifications,
+    getNotificationsCount,
+    marquerNotificationLue,
+    marquerToutesNotificationsLues
 } from '../services/api';
 import Layout from '../components/Layout';
 import './Enseignant.css';
@@ -26,6 +34,14 @@ function Enseignant() {
     const [stats, setStats] = useState({});
     const [profil, setProfil] = useState({});
     const [loading, setLoading] = useState(false);
+
+    // Droits secrétaire
+    const [droitsSecretaire, setDroitsSecretaire] = useState({ hasDroits: false, canAct: false });
+    const [etudiants, setEtudiants] = useState([]);
+
+    // Notifications
+    const [notifications, setNotifications] = useState([]);
+    const [notifCount, setNotifCount] = useState(0);
 
     // Modals
     const [showRefusModal, setShowRefusModal] = useState(false);
@@ -46,18 +62,27 @@ function Enseignant() {
     const [showProfilModal, setShowProfilModal] = useState(false);
     const [profilForm, setProfilForm] = useState({ nom: '', prenom: '' });
 
+    const [showEtudiantModal, setShowEtudiantModal] = useState(false);
+    const [etudiantForm, setEtudiantForm] = useState({
+        nom: '', prenom: '', email: '', mot_de_passe: '',
+        num_etudiant: '', date_naissance: '', formation: 'MIAGE', annee_formation: 1
+    });
+
     useEffect(() => {
         loadData();
     }, []);
 
     const loadData = async () => {
         try {
-            const [offresRes, candRes, baremesRes, statsRes, profilRes] = await Promise.all([
+            const [offresRes, candRes, baremesRes, statsRes, profilRes, droitsRes, notifRes, notifCountRes] = await Promise.all([
                 getOffresEnAttente(),
                 getCandidaturesAValider(),
                 getBaremes(),
                 getEnseignantStats(),
-                getEnseignantProfil()
+                getEnseignantProfil(),
+                getDroitsSecretaire(),
+                getNotifications(),
+                getNotificationsCount()
             ]);
             setOffres(offresRes.data);
             setCandidatures(candRes.data);
@@ -65,6 +90,15 @@ function Enseignant() {
             setStats(statsRes.data);
             setProfil(profilRes.data);
             setProfilForm({ nom: profilRes.data.nom, prenom: profilRes.data.prenom });
+            setDroitsSecretaire(droitsRes.data);
+            setNotifications(notifRes.data);
+            setNotifCount(notifCountRes.data.count);
+
+            // Charger les étudiants si droits secrétaire
+            if (droitsRes.data.hasDroits) {
+                const etudRes = await getEtudiantsEnseignant();
+                setEtudiants(etudRes.data);
+            }
         } catch (err) {
             console.error('Erreur chargement:', err);
         }
@@ -196,6 +230,58 @@ function Enseignant() {
         }
     };
 
+    // ==================== DROITS SECRÉTAIRE ====================
+    const handleCreateEtudiant = async (e) => {
+        e.preventDefault();
+        try {
+            setLoading(true);
+            await createEtudiantEnseignant(etudiantForm);
+            setShowEtudiantModal(false);
+            setEtudiantForm({
+                nom: '', prenom: '', email: '', mot_de_passe: '',
+                num_etudiant: '', date_naissance: '', formation: 'MIAGE', annee_formation: 1
+            });
+            loadData();
+            alert('Étudiant créé !');
+        } catch (err) {
+            alert('Erreur: ' + (err.response?.data?.error || err.message));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleValiderRC = async (id) => {
+        if (!confirm('Valider l\'attestation RC ?')) return;
+        try {
+            await validerRCEnseignant(id);
+            loadData();
+            alert('Attestation RC validée !');
+        } catch (err) {
+            alert('Erreur: ' + err.message);
+        }
+    };
+
+    // ==================== NOTIFICATIONS ====================
+    const handleMarquerLue = async (id) => {
+        try {
+            await marquerNotificationLue(id);
+            loadData();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleMarquerToutesLues = async () => {
+        try {
+            await marquerToutesNotificationsLues();
+            loadData();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const etudiantsSansRC = etudiants.filter(e => !e.responsabilite_civile);
+
     // ==================== RENDER ====================
     return (
         <Layout title="Espace Enseignant Responsable">
@@ -211,6 +297,14 @@ function Enseignant() {
                 </button>
                 <button className={activeTab === 'baremes' ? 'active' : ''} onClick={() => setActiveTab('baremes')}>
                     💰 Barèmes ({baremes.length})
+                </button>
+                {droitsSecretaire.hasDroits && (
+                    <button className={activeTab === 'secretaire' ? 'active' : ''} onClick={() => setActiveTab('secretaire')}>
+                        👩‍💼 Droits Secrétaire
+                    </button>
+                )}
+                <button className={activeTab === 'notifications' ? 'active' : ''} onClick={() => setActiveTab('notifications')}>
+                    🔔 Notifications {notifCount > 0 && <span className="notif-badge">{notifCount}</span>}
                 </button>
                 <button className={activeTab === 'profil' ? 'active' : ''} onClick={() => setActiveTab('profil')}>
                     👤 Mon Profil
@@ -325,7 +419,7 @@ function Enseignant() {
                                             <td>{cand.date_acceptation_entreprise ? new Date(cand.date_acceptation_entreprise).toLocaleDateString() : '-'}</td>
                                             <td className="actions">
                                                 <button className="btn-validate" onClick={() => handleValiderCandidature(cand.id)} disabled={loading}>
-                                                    ✅ Valider l'affectation
+                                                    ✅ Valider
                                                 </button>
                                             </td>
                                         </tr>
@@ -380,6 +474,98 @@ function Enseignant() {
                                 )}
                             </tbody>
                         </table>
+                    </div>
+                </>
+            )}
+
+            {/* ==================== DROITS SECRÉTAIRE ==================== */}
+            {activeTab === 'secretaire' && droitsSecretaire.hasDroits && (
+                <>
+                    <div className="section-header">
+                        <h2>Fonctions Secrétaire</h2>
+                        {droitsSecretaire.canAct ? (
+                            <span className="status-active">✅ Toutes les secrétaires sont en congé - Vous pouvez agir</span>
+                        ) : (
+                            <span className="status-inactive">⏸️ Des secrétaires sont disponibles ({droitsSecretaire.secretairesTotal - droitsSecretaire.secretairesEnConge} actives)</span>
+                        )}
+                    </div>
+
+                    {droitsSecretaire.canAct ? (
+                        <>
+                            <div className="sub-tabs">
+                                <h3>👨‍🎓 Étudiants</h3>
+                                <button className="btn-primary" onClick={() => setShowEtudiantModal(true)}>
+                                    + Inscrire un étudiant
+                                </button>
+                            </div>
+                            <div className="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Nom</th>
+                                            <th>Prénom</th>
+                                            <th>N° Étudiant</th>
+                                            <th>Formation</th>
+                                            <th>RC</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {etudiants.map(etudiant => (
+                                            <tr key={etudiant.id}>
+                                                <td>{etudiant.nom}</td>
+                                                <td>{etudiant.prenom}</td>
+                                                <td>{etudiant.num_etudiant}</td>
+                                                <td>{etudiant.formation}</td>
+                                                <td>{etudiant.responsabilite_civile ? '✅' : '⏳'}</td>
+                                                <td>
+                                                    {!etudiant.responsabilite_civile && (
+                                                        <button className="btn-validate" onClick={() => handleValiderRC(etudiant.id)}>
+                                                            ✅ Valider RC
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="info-box">
+                            <p>Vous avez les droits secrétaire mais vous ne pouvez les exercer que lorsque toutes les secrétaires sont en congé.</p>
+                        </div>
+                    )}
+                </>
+            )}
+
+            {/* ==================== NOTIFICATIONS ==================== */}
+            {activeTab === 'notifications' && (
+                <>
+                    <div className="section-header">
+                        <h2>Mes Notifications</h2>
+                        {notifCount > 0 && (
+                            <button className="btn-primary" onClick={handleMarquerToutesLues}>
+                                Tout marquer comme lu
+                            </button>
+                        )}
+                    </div>
+                    <div className="notifications-list">
+                        {notifications.length === 0 ? (
+                            <div className="empty-state">Aucune notification</div>
+                        ) : (
+                            notifications.map(notif => (
+                                <div key={notif.id} className={`notification-item ${notif.lue ? 'read' : 'unread'}`}>
+                                    <div className="notif-content">
+                                        <p className="notif-message">{notif.message}</p>
+                                        <span className="notif-date">{new Date(notif.date_creation).toLocaleString()}</span>
+                                    </div>
+                                    {!notif.lue && (
+                                        <button className="btn-small" onClick={() => handleMarquerLue(notif.id)}>✓</button>
+                                    )}
+                                </div>
+                            ))
+                        )}
                     </div>
                 </>
             )}
@@ -501,6 +687,70 @@ function Enseignant() {
                                 <button type="button" onClick={() => setShowProfilModal(false)}>Annuler</button>
                                 <button type="submit" className="btn-primary" disabled={loading}>
                                     {loading ? 'Enregistrement...' : 'Enregistrer'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* ==================== MODAL ÉTUDIANT ==================== */}
+            {showEtudiantModal && (
+                <div className="modal" onClick={() => setShowEtudiantModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <h2>Inscrire un étudiant</h2>
+                        <form onSubmit={handleCreateEtudiant}>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Nom</label>
+                                    <input type="text" value={etudiantForm.nom} onChange={e => setEtudiantForm({ ...etudiantForm, nom: e.target.value })} required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Prénom</label>
+                                    <input type="text" value={etudiantForm.prenom} onChange={e => setEtudiantForm({ ...etudiantForm, prenom: e.target.value })} required />
+                                </div>
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Email</label>
+                                    <input type="email" value={etudiantForm.email} onChange={e => setEtudiantForm({ ...etudiantForm, email: e.target.value })} required />
+                                </div>
+                                <div className="form-group">
+                                    <label>N° Étudiant</label>
+                                    <input type="text" value={etudiantForm.num_etudiant} onChange={e => setEtudiantForm({ ...etudiantForm, num_etudiant: e.target.value })} required />
+                                </div>
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Date de naissance</label>
+                                    <input type="date" value={etudiantForm.date_naissance} onChange={e => setEtudiantForm({ ...etudiantForm, date_naissance: e.target.value })} required />
+                                </div>
+                                <div className="form-group">
+                                    <label>Mot de passe</label>
+                                    <input type="password" value={etudiantForm.mot_de_passe} onChange={e => setEtudiantForm({ ...etudiantForm, mot_de_passe: e.target.value })} required />
+                                </div>
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Formation</label>
+                                    <select value={etudiantForm.formation} onChange={e => setEtudiantForm({ ...etudiantForm, formation: e.target.value })}>
+                                        <option value="MIAGE">MIAGE</option>
+                                        <option value="TAL">TAL</option>
+                                        <option value="SCIENCES_COGNITIVES">Sciences Cognitives</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Année</label>
+                                    <select value={etudiantForm.annee_formation} onChange={e => setEtudiantForm({ ...etudiantForm, annee_formation: parseInt(e.target.value) })}>
+                                        <option value="1">1ère année</option>
+                                        <option value="2">2ème année</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="modal-actions">
+                                <button type="button" onClick={() => setShowEtudiantModal(false)}>Annuler</button>
+                                <button type="submit" className="btn-primary" disabled={loading}>
+                                    {loading ? 'Création...' : 'Créer'}
                                 </button>
                             </div>
                         </form>

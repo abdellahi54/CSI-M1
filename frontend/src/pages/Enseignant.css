@@ -73,15 +73,37 @@
     font-weight: 500;
 }
 
-.stat-card.warning .stat-number { color: #f59e0b; }
-.stat-card.danger .stat-number { color: #ef4444; }
-.stat-card.success .stat-number { color: #10b981; }
-.stat-card.info .stat-number { color: #6366f1; }
+.stat-card.warning .stat-number {
+    color: #f59e0b;
+}
 
-.stat-card.warning { border-left: 4px solid #f59e0b; }
-.stat-card.danger { border-left: 4px solid #ef4444; }
-.stat-card.success { border-left: 4px solid #10b981; }
-.stat-card.info { border-left: 4px solid #6366f1; }
+.stat-card.danger .stat-number {
+    color: #ef4444;
+}
+
+.stat-card.success .stat-number {
+    color: #10b981;
+}
+
+.stat-card.info .stat-number {
+    color: #6366f1;
+}
+
+.stat-card.warning {
+    border-left: 4px solid #f59e0b;
+}
+
+.stat-card.danger {
+    border-left: 4px solid #ef4444;
+}
+
+.stat-card.success {
+    border-left: 4px solid #10b981;
+}
+
+.stat-card.info {
+    border-left: 4px solid #6366f1;
+}
 
 /* ==========================================
    SECTION HEADER
@@ -158,9 +180,20 @@ td.empty {
     text-transform: uppercase;
 }
 
-.badge.stage { background: #dbeafe; color: #1d4ed8; }
-.badge.alternance { background: #fef3c7; color: #d97706; }
-.badge.cdd { background: #d1fae5; color: #059669; }
+.badge.stage {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.badge.alternance {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.badge.cdd {
+    background: #d1fae5;
+    color: #059669;
+}
 
 /* ==========================================
    BUTTONS
@@ -394,7 +427,117 @@ td.empty {
         font-size: 0.85rem;
     }
 
-    th, td {
+    th,
+    td {
         padding: 0.75rem 0.5rem;
     }
+}
+
+/* ==========================================
+   NOTIFICATIONS
+   ========================================== */
+
+.notif-badge {
+    background: #ef4444;
+    color: white;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+}
+
+.notifications-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.notification-item {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+}
+
+.notification-item.unread {
+    border-left: 4px solid #6366f1;
+    background: #f8fafc;
+}
+
+.notification-item.read {
+    opacity: 0.7;
+}
+
+.notif-content {
+    flex: 1;
+}
+
+.notif-message {
+    margin: 0 0 0.5rem 0;
+    color: #1e293b;
+}
+
+.notif-date {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.btn-small {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* ==========================================
+   DROITS SECRÉTAIRE
+   ========================================== */
+
+.status-active {
+    background: #d1fae5;
+    color: #059669;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.status-inactive {
+    background: #fef3c7;
+    color: #d97706;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.sub-tabs {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.sub-tabs h3 {
+    margin: 0;
+    color: #334155;
+}
+
+.info-box {
+    background: #f1f5f9;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    color: #64748b;
 }

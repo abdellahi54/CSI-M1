@@ -323,4 +323,199 @@ router.get('/stats', authMiddleware, withRole, async (req, res) => {
     }
 });
 
+// ==========================================
+// DROITS SECRÉTAIRE (quand secrétaires en congé)
+// ==========================================
+
+// GET - Vérifier si l'enseignant a les droits secrétaire et si des secrétaires sont en congé
+router.get('/droits-secretaire', authMiddleware, withRole, async (req, res) => {
+    try {
+        // Vérifier si l'enseignant a les droits
+        const enseignant = await req.dbClient.query(
+            'SELECT droits_secretaire FROM enseignant_responsable WHERE id = $1',
+            [req.userId]
+        );
+
+        if (enseignant.rows.length === 0 || !enseignant.rows[0].droits_secretaire) {
+            return res.json({ hasDroits: false, canAct: false });
+        }
+
+        // Vérifier si toutes les secrétaires sont en congé
+        const secretaires = await req.dbClient.query(
+            'SELECT COUNT(*) as total, SUM(CASE WHEN en_conge THEN 1 ELSE 0 END) as en_conge FROM secretaire'
+        );
+
+        const total = parseInt(secretaires.rows[0].total);
+        const enConge = parseInt(secretaires.rows[0].en_conge);
+
+        res.json({
+            hasDroits: true,
+            canAct: total === 0 || total === enConge,
+            secretairesTotal: total,
+            secretairesEnConge: enConge
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
+// GET - Liste des étudiants (pour droits secrétaire)
+router.get('/etudiants', authMiddleware, withRole, async (req, res) => {
+    try {
+        const result = await req.dbClient.query(`
+            SELECT e.*, u.email, u.date_creation
+            FROM etudiant e
+            JOIN utilisateur u ON e.id = u.id
+            ORDER BY e.nom, e.prenom
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
+// POST - Inscrire un étudiant (droits secrétaire)
+const bcrypt = require('bcrypt');
+
+router.post('/etudiants', authMiddleware, withRole, async (req, res) => {
+    try {
+        const {
+            email,
+            mot_de_passe,
+            num_etudiant,
+            nom,
+            prenom,
+            date_naissance,
+            formation,
+            annee_formation
+        } = req.body;
+
+        await req.dbClient.query('BEGIN');
+
+        // Hash du mot de passe
+        const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
+
+        // Créer l'utilisateur
+        const userResult = await req.dbClient.query(`
+            INSERT INTO utilisateur (email, mot_de_passe, role)
+            VALUES ($1, $2, 'ETUDIANT')
+            RETURNING id
+        `, [email, hashedPassword]);
+
+        const userId = userResult.rows[0].id;
+
+        // Créer l'étudiant
+        await req.dbClient.query(`
+            INSERT INTO etudiant (
+                id, createur_compte_id, num_etudiant, nom, prenom, 
+                date_naissance, formation, annee_formation, 
+                statut, visibilite, responsabilite_civile
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'EN_RECHERCHE', false, false)
+        `, [userId, req.userId, num_etudiant, nom, prenom, date_naissance, formation, annee_formation]);
+
+        await req.dbClient.query('COMMIT');
+
+        res.status(201).json({
+            message: 'Étudiant créé avec succès',
+            id: userId
+        });
+    } catch (err) {
+        await req.dbClient.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ error: 'Erreur lors de la création', details: err.message });
+    }
+});
+
+// PUT - Valider l'attestation RC d'un étudiant (droits secrétaire)
+router.put('/etudiants/:id/valider-rc', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await req.dbClient.query(`
+            UPDATE etudiant 
+            SET responsabilite_civile = true,
+                validateur_rc_id = $1
+            WHERE id = $2
+        `, [req.userId, id]);
+
+        res.json({ message: 'Attestation RC validée' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
+// ==========================================
+// NOTIFICATIONS
+// ==========================================
+
+// GET - Liste des notifications de l'enseignant
+router.get('/notifications', authMiddleware, withRole, async (req, res) => {
+    try {
+        const result = await req.dbClient.query(`
+            SELECT * FROM notification
+            WHERE destinataire_id = $1
+            ORDER BY date_creation DESC
+            LIMIT 50
+        `, [req.userId]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
+// PUT - Marquer une notification comme lue
+router.put('/notifications/:id/lire', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        await req.dbClient.query(`
+            UPDATE notification 
+            SET lue = true,
+                date_lecture = NOW()
+            WHERE id = $1 AND destinataire_id = $2
+        `, [id, req.userId]);
+
+        res.json({ message: 'Notification marquée comme lue' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
+// PUT - Marquer toutes les notifications comme lues
+router.put('/notifications/lire-toutes', authMiddleware, withRole, async (req, res) => {
+    try {
+        await req.dbClient.query(`
+            UPDATE notification 
+            SET lue = true,
+                date_lecture = NOW()
+            WHERE destinataire_id = $1 AND lue = false
+        `, [req.userId]);
+
+        res.json({ message: 'Toutes les notifications marquées comme lues' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
+// GET - Nombre de notifications non lues
+router.get('/notifications/count', authMiddleware, withRole, async (req, res) => {
+    try {
+        const result = await req.dbClient.query(`
+            SELECT COUNT(*) as count FROM notification
+            WHERE destinataire_id = $1 AND lue = false
+        `, [req.userId]);
+        res.json({ count: parseInt(result.rows[0].count) });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
 module.exports = router;
