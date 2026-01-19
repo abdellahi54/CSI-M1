@@ -5,6 +5,7 @@ import Admin from './pages/Admin';
 import Secretaire from './pages/Secretaire';
 import Etudiant from './pages/Etudiant';
 import Enseignant from './pages/Enseignant';
+import RegisterEntreprise from './pages/RegisterEntreprise';
 import './App.css';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         <Routes>
           {/* Page de connexion */}
           <Route path="/login" element={<Login />} />
+          <Route path="/register/entreprise" element={<RegisterEntreprise />} />
 
           {/* Routes protégées Admin */}
           <Route
