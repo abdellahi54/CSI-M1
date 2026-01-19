@@ -84,7 +84,7 @@ function Login() {
 
                 <div className="login-footer">
                     <p>Vous êtes une entreprise ?</p>
-                    <a href="/inscription">Créer un compte</a>
+                    <a href="/register/entreprise">Créer un compte entreprise</a>
                 </div>
             </div>
         </div>
