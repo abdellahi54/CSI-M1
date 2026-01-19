@@ -24,5 +24,20 @@ const verifyPassword = async (plainPassword, hashedPassword) => {
 
 module.exports = {
     findUserByEmail,
-    verifyPassword
+    verifyPassword,
+    createUser: async (client, email, hashedPassword, role) => {
+        const query = 'INSERT INTO utilisateur (email, mot_de_passe, role) VALUES ($1, $2, $3) RETURNING *';
+        const result = await client.query(query, [email, hashedPassword, role]);
+        return result.rows[0];
+    },
+    createEntreprise: async (client, userId, data) => {
+        const query = `
+            INSERT INTO entreprise (id, siret, raison_sociale, adresse, forme_juridique)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *
+        `;
+        const values = [userId, data.siret, data.raison_sociale, data.adresse, data.forme_juridique];
+        const result = await client.query(query, values);
+        return result.rows[0];
+    }
 };
