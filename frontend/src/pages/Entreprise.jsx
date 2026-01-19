@@ -1,14 +1,26 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { getEntrepriseProfile, updateEntrepriseProfile } from '../services/api';
 import './Entreprise.css';
 
 function EntrepriseDashboard() {
-    const { user, token } = useAuth();
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
     const [offers, setOffers] = useState([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    // Profile State
+    const [profile, setProfile] = useState(null);
+    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [profileForm, setProfileForm] = useState({
+        raison_sociale: '',
+        adresse: '',
+        forme_juridique: ''
+    });
 
     // Form State
     const [formData, setFormData] = useState({
@@ -24,6 +36,7 @@ function EntrepriseDashboard() {
 
     useEffect(() => {
         fetchOffers();
+        fetchProfile();
     }, []);
 
     const fetchOffers = async () => {
@@ -38,6 +51,36 @@ function EntrepriseDashboard() {
         } catch (err) {
             console.error('Erreur chargement offres:', err);
             setError('Impossible de charger vos offres.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchProfile = async () => {
+        try {
+            const response = await getEntrepriseProfile();
+            setProfile(response.data);
+            setProfileForm({
+                raison_sociale: response.data.raison_sociale,
+                adresse: response.data.adresse,
+                forme_juridique: response.data.forme_juridique
+            });
+        } catch (err) {
+            console.error('Erreur chargement profil:', err);
+        }
+    };
+
+    const handleProfileSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            setLoading(true);
+            await updateEntrepriseProfile(profileForm);
+            alert('Profil mis à jour avec succès !');
+            setShowProfileModal(false);
+            fetchProfile();
+        } catch (err) {
+            console.error('Erreur mise à jour profil:', err);
+            alert(err.response?.data?.error || 'Erreur lors de la mise à jour');
         } finally {
             setLoading(false);
         }
@@ -96,18 +139,39 @@ function EntrepriseDashboard() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleLogout = () => {
+        if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+            logout();
+            navigate('/login');
+        }
+    };
+
     if (loading) return <div>Chargement...</div>;
 
     return (
         <div className="entreprise-dashboard">
             <header className="dashboard-header">
-                <h1>👋 Bienvenue, {user.email}</h1>
-                <button
-                    className="create-btn"
-                    onClick={() => setShowCreateForm(!showCreateForm)}
-                >
-                    {showCreateForm ? 'Annuler' : '+ Créer une offre'}
-                </button>
+                <h1>👋 Bienvenue, {profile?.raison_sociale || user.email}</h1>
+                <div className="header-actions">
+                    <button
+                        className="profile-btn"
+                        onClick={() => setShowProfileModal(true)}
+                    >
+                        👤 Mon Profil
+                    </button>
+                    <button
+                        className="create-btn"
+                        onClick={() => setShowCreateForm(!showCreateForm)}
+                    >
+                        {showCreateForm ? 'Annuler' : '+ Créer une offre'}
+                    </button>
+                    <button
+                        className="logout-btn"
+                        onClick={handleLogout}
+                    >
+                        🚪 Déconnexion
+                    </button>
+                </div>
             </header>
 
             {error && <div className="error-message">{error}</div>}
@@ -210,6 +274,72 @@ function EntrepriseDashboard() {
                     </table>
                 )}
             </div>
+
+            {/* Modal Profil */}
+            {showProfileModal && (
+                <div className="modal" onClick={() => setShowProfileModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h2>Mon Profil Entreprise</h2>
+
+                        {profile && (
+                            <div className="profile-info">
+                                <p><strong>Email:</strong> {profile.email}</p>
+                                <p><strong>SIRET:</strong> {profile.siret}</p>
+                                <p><strong>Date de création:</strong> {new Date(profile.date_creation).toLocaleDateString()}</p>
+                                <p><strong>Statut:</strong> {profile.active ? '✅ Actif' : '❌ Inactif'}</p>
+                            </div>
+                        )}
+
+                        <form onSubmit={handleProfileSubmit}>
+                            <div className="form-group">
+                                <label>Raison Sociale</label>
+                                <input
+                                    type="text"
+                                    value={profileForm.raison_sociale}
+                                    onChange={(e) => setProfileForm({ ...profileForm, raison_sociale: e.target.value })}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Adresse</label>
+                                <textarea
+                                    value={profileForm.adresse}
+                                    onChange={(e) => setProfileForm({ ...profileForm, adresse: e.target.value })}
+                                    required
+                                    rows="3"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Forme Juridique</label>
+                                <select
+                                    value={profileForm.forme_juridique}
+                                    onChange={(e) => setProfileForm({ ...profileForm, forme_juridique: e.target.value })}
+                                    required
+                                >
+                                    <option value="">Sélectionner...</option>
+                                    <option value="SARL">SARL</option>
+                                    <option value="SAS">SAS</option>
+                                    <option value="SA">SA</option>
+                                    <option value="EURL">EURL</option>
+                                    <option value="SNC">SNC</option>
+                                    <option value="Association">Association</option>
+                                    <option value="Auto-entrepreneur">Auto-entrepreneur</option>
+                                    <option value="Autre">Autre</option>
+                                </select>
+                            </div>
+
+                            <div className="modal-actions">
+                                <button type="button" onClick={() => setShowProfileModal(false)}>Annuler</button>
+                                <button type="submit" className="create-btn" disabled={loading}>
+                                    {loading ? 'Enregistrement...' : 'Enregistrer'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

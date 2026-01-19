@@ -100,4 +100,8 @@ export const getNotificationsCount = () => api.get('/enseignant/notifications/co
 export const marquerNotificationLue = (id) => api.put(`/enseignant/notifications/${id}/lire`);
 export const marquerToutesNotificationsLues = () => api.put('/enseignant/notifications/lire-toutes');
 
+// Entreprise - Profile
+export const getEntrepriseProfile = () => api.get('/entreprise/profile');
+export const updateEntrepriseProfile = (data) => api.put('/entreprise/profile', data);
+
 export default api;
