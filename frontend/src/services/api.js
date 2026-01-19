@@ -86,4 +86,16 @@ export const createBareme = (data) => api.post('/enseignant/baremes', data);
 export const updateBareme = (id, data) => api.put(`/enseignant/baremes/${id}`, data);
 export const deleteBareme = (id) => api.delete(`/enseignant/baremes/${id}`);
 
+// Enseignant - Droits Secrétaire
+export const getDroitsSecretaire = () => api.get('/enseignant/droits-secretaire');
+export const getEtudiantsEnseignant = () => api.get('/enseignant/etudiants');
+export const createEtudiantEnseignant = (data) => api.post('/enseignant/etudiants', data);
+export const validerRCEnseignant = (id) => api.put(`/enseignant/etudiants/${id}/valider-rc`);
+
+// Enseignant - Notifications
+export const getNotifications = () => api.get('/enseignant/notifications');
+export const getNotificationsCount = () => api.get('/enseignant/notifications/count');
+export const marquerNotificationLue = (id) => api.put(`/enseignant/notifications/${id}/lire`);
+export const marquerToutesNotificationsLues = () => api.put('/enseignant/notifications/lire-toutes');
+
 export default api;
