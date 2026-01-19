@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Gestion Stages IDMC</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <header>
+        <h1>🔧 Administration - Gestion des Stages IDMC</h1>
+        <nav>
+            <span class="user-info" id="user-name">Administrateur</span>
+            <a href="#" onclick="logout()">Déconnexion</a>
+        </nav>
+    </header>
+
+    <main class="dashboard">
+        <aside class="sidebar">
+            <h3>Menu Admin</h3>
+            <ul>
+                <li><a href="#" class="active" data-section="secretaires">👩‍💼 Secrétaires</a></li>
+                <li><a href="#" data-section="enseignants">👨‍🏫 Enseignants</a></li>
+            </ul>
+        </aside>
+
+        <section class="content">
+            <!-- Section Secrétaires -->
+            <div id="section-secretaires" class="section active">
+                <div class="section-header">
+                    <h2>Gestion des Secrétaires</h2>
+                    <button id="btn-add-secretaire" class="btn-primary">+ Ajouter une secrétaire</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="table-secretaires">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Email</th>
+                                <th>En congé</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Section Enseignants -->
+            <div id="section-enseignants" class="section">
+                <div class="section-header">
+                    <h2>Gestion des Enseignants Responsables</h2>
+                    <button id="btn-add-enseignant" class="btn-primary">+ Ajouter un enseignant</button>
+                </div>
+
+                <div class="table-container">
+                    <table id="table-enseignants">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Prénom</th>
+                                <th>Email</th>
+                                <th>Droits secrétaire</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Secrétaire -->
+    <div id="modal-secretaire" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModalSecretaire()">&times;</span>
+            <h2>Ajouter une secrétaire</h2>
+            <form id="form-secretaire">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sec-nom">Nom</label>
+                        <input type="text" id="sec-nom" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sec-prenom">Prénom</label>
+                        <input type="text" id="sec-prenom" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sec-email">Email</label>
+                        <input type="email" id="sec-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="sec-password">Mot de passe</label>
+                        <input type="password" id="sec-password" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">Créer le compte</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Enseignant -->
+    <div id="modal-enseignant" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModalEnseignant()">&times;</span>
+            <h2>Ajouter un enseignant responsable</h2>
+            <form id="form-enseignant">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ens-nom">Nom</label>
+                        <input type="text" id="ens-nom" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ens-prenom">Prénom</label>
+                        <input type="text" id="ens-prenom" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ens-email">Email</label>
+                        <input type="email" id="ens-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ens-password">Mot de passe</label>
+                        <input type="password" id="ens-password" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="ens-droits"> Peut remplacer la secrétaire
+                    </label>
+                </div>
+                <button type="submit" class="btn-primary">Créer le compte</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+
+</html>

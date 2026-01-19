@@ -15,11 +15,18 @@ app.get('/', (req, res) => {
 });
 
 // Import des routes
-// const authRoutes = require('./routes/auth');
+const etudiantsRoutes = require('./routes/etudiants');
+const authRoutes = require('./routes/auth');
+const testRoutes = require('./routes/test');
+const adminRoutes = require('./routes/admin');
 // const offresRoutes = require('./routes/offres');
 // const candidaturesRoutes = require('./routes/candidatures');
 
-// app.use('/api/auth', authRoutes);
+// Routes API
+app.use('/api/etudiants', etudiantsRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/test', testRoutes);
+app.use('/api/admin', adminRoutes);
 // app.use('/api/offres', offresRoutes);
 // app.use('/api/candidatures', candidaturesRoutes);
 
