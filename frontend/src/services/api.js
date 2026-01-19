@@ -43,6 +43,23 @@ export const createEnseignant = (data) => api.post('/admin/enseignants', data);
 export const deleteSecretaire = (id) => api.delete(`/admin/secretaires/${id}`);
 export const deleteEnseignant = (id) => api.delete(`/admin/enseignants/${id}`);
 
+// Offres
+export const getOffres = () => api.get('/offres');
+export const getOffre = (id) => api.get(`/offres/${id}`);
+export const getOffresPending = () => api.get('/offres/pending/all');
+export const createOffre = (data) => api.post('/offres', data);
+export const validateOffre = (id, data) => api.put(`/offres/${id}/validate`, data);
+export const getMyOffres = () => api.get('/offres/entreprise/mine');
+
+// Candidatures
+export const getMyCandidatures = () => api.get('/candidatures/etudiant/mine');
+export const getCandidaturesForOffre = (offreId) => api.get(`/candidatures/offre/${offreId}`);
+export const getCandidaturesPending = () => api.get('/candidatures/pending/all');
+export const postuler = (data) => api.post('/candidatures', data);
+export const cancelCandidature = (id) => api.put(`/candidatures/${id}/cancel`);
+export const entrepriseDecision = (id, decision) => api.put(`/candidatures/${id}/entreprise-decision`, { decision });
+export const validateCandidature = (id, data) => api.put(`/candidatures/${id}/validate`, data);
+
 // Test
 export const createAdmin = () => api.get('/test/create-admin');
 

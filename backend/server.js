@@ -19,16 +19,16 @@ const etudiantsRoutes = require('./routes/etudiants');
 const authRoutes = require('./routes/auth');
 const testRoutes = require('./routes/test');
 const adminRoutes = require('./routes/admin');
-// const offresRoutes = require('./routes/offres');
-// const candidaturesRoutes = require('./routes/candidatures');
+const offresRoutes = require('./routes/offres');
+const candidaturesRoutes = require('./routes/candidatures');
 
 // Routes API
 app.use('/api/etudiants', etudiantsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/admin', adminRoutes);
-// app.use('/api/offres', offresRoutes);
-// app.use('/api/candidatures', candidaturesRoutes);
+app.use('/api/offres', offresRoutes);
+app.use('/api/candidatures', candidaturesRoutes);
 
 // Démarrage du serveur
 app.listen(PORT, () => {

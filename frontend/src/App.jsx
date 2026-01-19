@@ -3,6 +3,7 @@ import { AuthProvider, ProtectedRoute } from './context/AuthContext';
 import Login from './pages/Login';
 import Admin from './pages/Admin';
 import Secretaire from './pages/Secretaire';
+import Etudiant from './pages/Etudiant';
 import './App.css';
 
 function App() {
@@ -29,6 +30,16 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['SECRETAIRE']}>
                 <Secretaire />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Routes protégées Étudiant */}
+          <Route
+            path="/etudiant"
+            element={
+              <ProtectedRoute allowedRoles={['ETUDIANT']}>
+                <Etudiant />
               </ProtectedRoute>
             }
           />

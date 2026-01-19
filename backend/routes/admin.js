@@ -98,7 +98,7 @@ router.post('/enseignants', authMiddleware, withRole, async (req, res) => {
         await req.dbClient.query(`
             INSERT INTO enseignant_responsable (id, nom, prenom, droits_secretaire)
             VALUES ($1, $2, $3, $4)
-        `, [userId, nom, prenom, droits_secretaire || false]);
+        `, [userId, nom, prenom, droits_secretaire !== false]);
 
         await req.dbClient.query('COMMIT');
 
