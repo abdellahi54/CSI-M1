@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Admin from './pages/Admin';
 import Secretaire from './pages/Secretaire';
 import Etudiant from './pages/Etudiant';
+import Enseignant from './pages/Enseignant';
 import './App.css';
 
 function App() {
@@ -40,6 +41,16 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['ETUDIANT']}>
                 <Etudiant />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Routes protégées Enseignant Responsable */}
+          <Route
+            path="/enseignant"
+            element={
+              <ProtectedRoute allowedRoles={['ENSEIGNANT RESPONSABLE']}>
+                <Enseignant />
               </ProtectedRoute>
             }
           />

@@ -63,4 +63,27 @@ export const validateCandidature = (id, data) => api.put(`/candidatures/${id}/va
 // Test
 export const createAdmin = () => api.get('/test/create-admin');
 
+// Enseignant - Statistiques
+export const getEnseignantStats = () => api.get('/enseignant/stats');
+
+// Enseignant - Profil
+export const getEnseignantProfil = () => api.get('/enseignant/profil');
+export const updateEnseignantProfil = (data) => api.put('/enseignant/profil', data);
+
+// Enseignant - Offres
+export const getOffresEnAttente = () => api.get('/enseignant/offres');
+export const getToutesOffres = () => api.get('/enseignant/offres/toutes');
+export const validerOffre = (id) => api.put(`/enseignant/offres/${id}/valider`);
+export const refuserOffre = (id, motif) => api.put(`/enseignant/offres/${id}/refuser`, { motif });
+
+// Enseignant - Candidatures
+export const getCandidaturesAValider = () => api.get('/enseignant/candidatures');
+export const validerCandidature = (id) => api.put(`/enseignant/candidatures/${id}/valider`);
+
+// Enseignant - Barèmes
+export const getBaremes = () => api.get('/enseignant/baremes');
+export const createBareme = (data) => api.post('/enseignant/baremes', data);
+export const updateBareme = (id, data) => api.put(`/enseignant/baremes/${id}`, data);
+export const deleteBareme = (id) => api.delete(`/enseignant/baremes/${id}`);
+
 export default api;
