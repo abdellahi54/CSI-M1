@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { getEntrepriseProfile, updateEntrepriseProfile, getEtudiantsForEntreprise, getEtudiantDetails } from '../services/api';
+import { getEntrepriseProfile, updateEntrepriseProfile, getEtudiantsForEntreprise, getEtudiantDetails, getEntrepriseCandidatures, acceptCandidature, rejectCandidature, getCandidatureStudent } from '../services/api';
 import './Entreprise.css';
 
 function EntrepriseDashboard() {
@@ -23,12 +23,16 @@ function EntrepriseDashboard() {
     });
 
     // Tab State
-    const [activeTab, setActiveTab] = useState('offers'); // 'offers' | 'students'
+    const [activeTab, setActiveTab] = useState('offers'); // 'offers' | 'students' | 'candidatures'
 
     // Students State
     const [students, setStudents] = useState([]);
     const [selectedStudent, setSelectedStudent] = useState(null);
     const [showStudentModal, setShowStudentModal] = useState(false);
+
+    // Candidatures State
+    const [candidatures, setCandidatures] = useState([]);
+    const [selectedOffre, setSelectedOffre] = useState('all');
 
     // Form State
     const [formData, setFormData] = useState({
@@ -46,6 +50,7 @@ function EntrepriseDashboard() {
         fetchOffers();
         fetchProfile();
         fetchStudents();
+        fetchCandidatures();
     }, []);
 
     const fetchOffers = async () => {
@@ -112,6 +117,53 @@ function EntrepriseDashboard() {
         } catch (err) {
             console.error('Erreur chargement détails étudiant:', err);
             alert('Impossible de charger les détails de l\'étudiant');
+        }
+    };
+
+    const fetchCandidatures = async (offreId = null) => {
+        try {
+            const response = await getEntrepriseCandidatures(offreId);
+            setCandidatures(response.data);
+        } catch (err) {
+            console.error('Erreur chargement candidatures:', err);
+        }
+    };
+
+    const handleFilterChange = (e) => {
+        const offreId = e.target.value;
+        setSelectedOffre(offreId);
+        fetchCandidatures(offreId === 'all' ? null : offreId);
+    };
+
+    const handleAcceptCandidature = async (id) => {
+        if (!confirm('Accepter cette candidature ?')) return;
+        try {
+            await acceptCandidature(id);
+            alert('Candidature acceptée !');
+            fetchCandidatures(selectedOffre === 'all' ? null : selectedOffre);
+        } catch (err) {
+            alert(err.response?.data?.error || 'Erreur');
+        }
+    };
+
+    const handleRejectCandidature = async (id) => {
+        if (!confirm('Rejeter cette candidature ?')) return;
+        try {
+            await rejectCandidature(id);
+            alert('Candidature rejetée');
+            fetchCandidatures(selectedOffre === 'all' ? null : selectedOffre);
+        } catch (err) {
+            alert(err.response?.data?.error || 'Erreur');
+        }
+    };
+
+    const handleViewCandidatureStudent = async (candidatureId) => {
+        try {
+            const response = await getCandidatureStudent(candidatureId);
+            setSelectedStudent(response.data);
+            setShowStudentModal(true);
+        } catch (err) {
+            alert('Impossible de charger les détails');
         }
     };
 
@@ -215,7 +267,13 @@ function EntrepriseDashboard() {
                     className={activeTab === 'students' ? 'tab active' : 'tab'}
                     onClick={() => setActiveTab('students')}
                 >
-                    👨‍🎓 Étudiants Disponibles ({students.length})
+                    👨‍🎓 Étudiants ({students.length})
+                </button>
+                <button
+                    className={activeTab === 'candidatures' ? 'tab active' : 'tab'}
+                    onClick={() => setActiveTab('candidatures')}
+                >
+                    📋 Candidatures ({candidatures.length})
                 </button>
             </div>
 
@@ -363,6 +421,80 @@ function EntrepriseDashboard() {
                                             >
                                                 👁️ Voir Profil
                                             </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            )}
+
+            {/* Candidatures Tab */}
+            {activeTab === 'candidatures' && (
+                <div className="candidatures-section">
+                    <div className="candidatures-header">
+                        <h2>Gestion des Candidatures</h2>
+                        <div className="filter-group">
+                            <label>Filtrer par offre:</label>
+                            <select value={selectedOffre} onChange={handleFilterChange}>
+                                <option value="all">Toutes les offres</option>
+                                {offers.map(offer => (
+                                    <option key={offer.id} value={offer.id}>
+                                        {offer.type} - {offer.description.substring(0, 30)}...
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {candidatures.length === 0 ? (
+                        <p>Aucune candidature pour le moment.</p>
+                    ) : (
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Étudiant</th>
+                                    <th>Formation</th>
+                                    <th>Offre</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {candidatures.map((cand) => (
+                                    <tr key={cand.id}>
+                                        <td>
+                                            <button className="link-btn" onClick={() => handleViewCandidatureStudent(cand.id)}>
+                                                {cand.etudiant_nom} {cand.etudiant_prenom}
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <span className={`badge-formation ${cand.formation?.toLowerCase()}`}>
+                                                {cand.formation} M{cand.annee_formation}
+                                            </span>
+                                        </td>
+                                        <td>{cand.offre_type}</td>
+                                        <td>{new Date(cand.date_candidature).toLocaleDateString()}</td>
+                                        <td>
+                                            <span className={`status-badge ${cand.statut.toLowerCase().replace(/ /g, '-')}`}>
+                                                {cand.statut}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {cand.statut === 'SOUMISE' ? (
+                                                <>
+                                                    <button className="btn-accept" onClick={() => handleAcceptCandidature(cand.id)}>
+                                                        ✅ Accepter
+                                                    </button>
+                                                    <button className="btn-reject" onClick={() => handleRejectCandidature(cand.id)}>
+                                                        ❌ Rejeter
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <span className="small-text">Traitée</span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
