@@ -10,7 +10,7 @@ router.get('/', authMiddleware, withRole, async (req, res) => {
             SELECT o.*, e.raison_sociale as entreprise_nom
             FROM offre o
             JOIN entreprise e ON o.entreprise_id = e.id
-            WHERE o.etat = 'Validee'
+            WHERE o.etat = 'VALDEE'
             ORDER BY o.date_creation DESC
         `);
         res.json(result.rows);
@@ -48,7 +48,7 @@ router.get('/pending/all', authMiddleware, withRole, async (req, res) => {
             SELECT o.*, e.raison_sociale as entreprise_nom
             FROM offre o
             JOIN entreprise e ON o.entreprise_id = e.id
-            WHERE o.etat = 'EnAttenteValidation'
+            WHERE o.etat = 'EN ATTENTE DE VALIDATION'
             ORDER BY o.date_creation DESC
         `);
         res.json(result.rows);
@@ -125,7 +125,7 @@ router.post('/', authMiddleware, withRole, async (req, res) => {
 router.put('/:id/validate', authMiddleware, withRole, async (req, res) => {
     try {
         const { id } = req.params;
-        const { etat, motif_refus } = req.body; // etat = 'Validee' ou 'NonValidee'
+        const { etat, motif_refus } = req.body; // etat = 'VALDEE' ou 'NON VALDEE'
 
         await req.dbClient.query(`
             UPDATE offre 
@@ -136,7 +136,7 @@ router.put('/:id/validate', authMiddleware, withRole, async (req, res) => {
             WHERE id = $4
         `, [etat, req.userId, motif_refus, id]);
 
-        res.json({ message: `Offre ${etat === 'Validee' ? 'validée' : 'refusée'}` });
+        res.json({ message: `Offre ${etat === 'VALDEE' ? 'validée' : 'refusée'}` });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erreur validation offre' });

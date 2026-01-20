@@ -72,15 +72,8 @@ function Enseignant() {
 
     const loadData = async () => {
         try {
-<<<<<<< HEAD
-            const [offresRes, candRes, baremesRes, statsRes] = await Promise.all([
-                getOffresEnAttente().catch(() => ({ data: [] })),
-                getCandidaturesAValider().catch(() => ({ data: [] })),
-                getBaremes().catch(() => ({ data: [] })),
-                getEnseignantStats().catch(() => ({ data: {} }))
-=======
             const [offresRes, candRes, baremesRes, statsRes, profilRes, droitsRes, notifRes, notifCountRes] = await Promise.all([
-                getToutesLesOffres(),
+                getOffresEnAttente(),
                 getCandidaturesAValider(),
                 getBaremes(),
                 getEnseignantStats(),
@@ -88,7 +81,6 @@ function Enseignant() {
                 getDroitsSecretaire(),
                 getNotifications(),
                 getNotificationsCount()
->>>>>>> 4f7342cb350807b3a005d1478b1ad195a60d9a19
             ]);
 
             setOffres(offresRes.data);
@@ -379,58 +371,37 @@ function Enseignant() {
                             </thead>
                             <tbody>
                                 {offres.length === 0 ? (
-<<<<<<< HEAD
-                                    <tr><td colSpan="7" className="empty">Aucune offre en attente de validation</td></tr>
+                                    <tr><td colSpan="8" className="empty">Aucune offre</td></tr>
                                 ) : (
                                     offres.map(offre => (
                                         <tr key={offre.id}>
                                             <td>{offre.entreprise_nom}</td>
-                                            <td>{offre.titre}</td>
+                                            <td>{offre.description?.substring(0, 50)}...</td>
                                             <td><span className={`badge ${offre.type?.toLowerCase()}`}>{offre.type}</span></td>
-                                            <td>{offre.remuneration} €/mois</td>
-                                            <td>{offre.duree} mois</td>
-                                            <td>{new Date(offre.date_depot).toLocaleDateString('fr-FR')}</td>
+                                            <td>
+                                                <span className={`badge-etat ${offre.etat === 'VALDEE' ? 'validee' : offre.etat === 'NON VALDEE' ? 'refusee' : 'attente'}`}>
+                                                    {offre.etat || 'EN ATTENTE DE VALIDATION'}
+                                                </span>
+                                            </td>
+                                            <td>{offre.remuneration}€/mois</td>
+                                            <td>{offre.duree} semaines</td>
+                                            <td>{new Date(offre.date_debut).toLocaleDateString()}</td>
                                             <td className="actions">
-                                                <button className="btn-validate" onClick={() => handleValiderOffre(offre.id)} disabled={loading}>
-                                                    Valider
-                                                </button>
-                                                <button className="btn-refuse" onClick={() => openRefusModal(offre)} disabled={loading}>
-                                                    Refuser
-                                                </button>
+                                                {(!offre.etat || offre.etat === 'EN ATTENTE DE VALIDATION') ? (
+                                                    <>
+                                                        <button className="btn-validate" onClick={() => handleValiderOffre(offre.id)} disabled={loading}>
+                                                            ✅ Valider
+                                                        </button>
+                                                        <button className="btn-refuse" onClick={() => openRefusModal(offre)} disabled={loading}>
+                                                            ❌ Refuser
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <span className="small-text">-</span>
+                                                )}
                                             </td>
                                         </tr>
                                     ))
-=======
-                                    <tr><td colSpan="8" className="empty">Aucune offre</td></tr>
-                                ) : (
-                                    <tr key={offre.id}>
-                                        <td>{offre.entreprise_nom}</td>
-                                        <td>{offre.description?.substring(0, 50)}...</td>
-                                        <td><span className={`badge ${offre.type?.toLowerCase()}`}>{offre.type}</span></td>
-                                        <td>
-                                            <span className={`badge-etat ${offre.etat === 'Validee' ? 'validee' : offre.etat === 'Refusee' ? 'refusee' : 'attente'}`}>
-                                                {offre.etat || 'EN ATTENTE DE VALIDATION'}
-                                            </span>
-                                        </td>
-                                        <td>{offre.remuneration}€/mois</td>
-                                        <td>{offre.duree} semaines</td>
-                                        <td>{new Date(offre.date_debut).toLocaleDateString()}</td>
-                                        <td className="actions">
-                                            {offre.etat === 'EN ATTENTE DE VALIDATION' ? (
-                                                <>
-                                                    <button className="btn-validate" onClick={() => handleValiderOffre(offre.id)} disabled={loading}>
-                                                        ✅ Valider
-                                                    </button>
-                                                    <button className="btn-refuse" onClick={() => openRefusModal(offre)} disabled={loading}>
-                                                        ❌ Refuser
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <span className="small-text">-</span>
-                                            )}
-                                        </td>
-                                    </tr>
->>>>>>> 4f7342cb350807b3a005d1478b1ad195a60d9a19
                                 )}
                             </tbody>
                         </table>

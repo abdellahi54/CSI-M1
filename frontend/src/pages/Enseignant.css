@@ -186,7 +186,6 @@ td.empty {
     color: #34d399;
 }
 
-<<<<<<< HEAD
 /* STATUS BADGES */
 .status-badge {
     display: inline-flex;
@@ -196,7 +195,7 @@ td.empty {
     font-size: 0.85rem;
     font-weight: 500;
 }
-=======
+
 .badge-etat {
     display: inline-block;
     padding: 0.25rem 0.75rem;
@@ -225,11 +224,6 @@ td.empty {
     color: #94a3b8;
     font-size: 0.85rem;
 }
-
-/* ==========================================
-   BUTTONS
-   ========================================== */
->>>>>>> 4f7342cb350807b3a005d1478b1ad195a60d9a19
 
 .status-badge.active {
     background: rgba(52, 211, 153, 0.2);

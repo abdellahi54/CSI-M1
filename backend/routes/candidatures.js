@@ -53,7 +53,7 @@ router.get('/pending/all', authMiddleware, withRole, async (req, res) => {
             JOIN etudiant et ON c.etudiant_id = et.id
             JOIN offre o ON c.offre_id = o.id
             JOIN entreprise e ON o.entreprise_id = e.id
-            WHERE c.statut = 'AccepteeEntreprise'
+            WHERE c.statut = 'ACCEPTEE ENTREPRISE'
             ORDER BY c.date_candidature DESC
         `);
         res.json(result.rows);
@@ -80,7 +80,7 @@ router.post('/', authMiddleware, withRole, async (req, res) => {
 
         const result = await req.dbClient.query(`
             INSERT INTO candidature (etudiant_id, offre_id, statut, lettre_motivation)
-            VALUES ($1, $2, 'Soumise', $3)
+            VALUES ($1, $2, 'SOUMISE', $3)
             RETURNING id
         `, [req.userId, offre_id, lettre_motivation]);
 
@@ -102,7 +102,7 @@ router.put('/:id/cancel', authMiddleware, withRole, async (req, res) => {
         await req.dbClient.query(`
             UPDATE candidature 
             SET statut = 'Annulee'
-            WHERE id = $1 AND etudiant_id = $2 AND statut = 'Soumise'
+            WHERE id = $1 AND etudiant_id = $2 AND statut = 'SOUMISE'
         `, [id, req.userId]);
 
         res.json({ message: 'Candidature annulée' });
@@ -116,7 +116,7 @@ router.put('/:id/cancel', authMiddleware, withRole, async (req, res) => {
 router.put('/:id/entreprise-decision', authMiddleware, withRole, async (req, res) => {
     try {
         const { id } = req.params;
-        const { decision } = req.body; // 'AccepteeEntreprise' ou 'RejeteeEntreprise'
+        const { decision } = req.body; // 'ACCEPTEE ENTREPRISE' ou 'REJETEE ENTREPRISE'
 
         await req.dbClient.query(`
             UPDATE candidature 
@@ -125,7 +125,7 @@ router.put('/:id/entreprise-decision', authMiddleware, withRole, async (req, res
             WHERE id = $2
         `, [decision, id]);
 
-        res.json({ message: `Candidature ${decision === 'AccepteeEntreprise' ? 'acceptée' : 'rejetée'}` });
+        res.json({ message: `Candidature ${decision === 'ACCEPTEE ENTREPRISE' ? 'acceptée' : 'rejetée'}` });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erreur décision' });
@@ -136,7 +136,7 @@ router.put('/:id/entreprise-decision', authMiddleware, withRole, async (req, res
 router.put('/:id/validate', authMiddleware, withRole, async (req, res) => {
     try {
         const { id } = req.params;
-        const { decision, motif } = req.body; // 'Validee' ou 'RefuseeResponsable'
+        const { decision, motif } = req.body; // 'VALIDEE' ou 'REFUSEE RESPONSABLE'
 
         await req.dbClient.query(`
             UPDATE candidature 
@@ -147,7 +147,7 @@ router.put('/:id/validate', authMiddleware, withRole, async (req, res) => {
             WHERE id = $4
         `, [decision, req.userId, motif, id]);
 
-        res.json({ message: `Candidature ${decision === 'Validee' ? 'validée' : 'refusée'}` });
+        res.json({ message: `Candidature ${decision === 'VALIDEE' ? 'validée' : 'refusée'}` });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erreur validation' });
