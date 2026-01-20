@@ -119,6 +119,9 @@ export const acceptCandidature = (id) => api.put(`/candidatures/${id}/accept`);
 export const rejectCandidature = (id) => api.put(`/candidatures/${id}/reject`);
 export const getCandidatureStudent = (id) => api.get(`/candidatures/${id}/student`);
 
+// Entreprise - Offres
+export const updateOffre = (id, data) => api.put(`/offres/${id}`, data);
+
 // Documents RC
 export const getMyRC = () => api.get('/documents/rc/mine');
 export const getRCEtudiant = (etudiantId) => api.get(`/documents/rc/etudiant/${etudiantId}`);

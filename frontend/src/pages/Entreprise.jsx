@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { getEntrepriseProfile, updateEntrepriseProfile, getEtudiantsForEntreprise, getEtudiantDetails, getEntrepriseCandidatures, acceptCandidature, rejectCandidature, getCandidatureStudent } from '../services/api';
+import { getEntrepriseProfile, updateEntrepriseProfile, getEtudiantsForEntreprise, getEtudiantDetails, getEntrepriseCandidatures, acceptCandidature, rejectCandidature, getCandidatureStudent, updateOffre } from '../services/api';
+import Layout from '../components/Layout';
 import './Entreprise.css';
 
 function EntrepriseDashboard() {
-    const { user, logout } = useAuth();
-    const navigate = useNavigate();
+    const { user } = useAuth();
     const [offers, setOffers] = useState([]);
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -15,7 +14,6 @@ function EntrepriseDashboard() {
 
     // Profile State
     const [profile, setProfile] = useState(null);
-    const [showProfileModal, setShowProfileModal] = useState(false);
     const [profileForm, setProfileForm] = useState({
         raison_sociale: '',
         adresse: '',
@@ -33,6 +31,10 @@ function EntrepriseDashboard() {
     // Candidatures State
     const [candidatures, setCandidatures] = useState([]);
     const [selectedOffre, setSelectedOffre] = useState('all');
+
+    // Edit Offer State
+    const [editingOffer, setEditingOffer] = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -220,60 +222,61 @@ function EntrepriseDashboard() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleLogout = () => {
-        if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
-            logout();
-            navigate('/login');
+    const openEditModal = (offer) => {
+        setEditingOffer({
+            id: offer.id,
+            description: offer.description,
+            remuneration: offer.remuneration,
+            pays: offer.pays,
+            ville: offer.ville,
+            duree: offer.duree,
+            date_debut: offer.date_debut?.split('T')[0] || '',
+            date_expiration: offer.date_expiration?.split('T')[0] || ''
+        });
+        setShowEditModal(true);
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await updateOffre(editingOffer.id, editingOffer);
+            alert('Offre modifiee avec succes !');
+            setShowEditModal(false);
+            setEditingOffer(null);
+            fetchOffers();
+        } catch (err) {
+            alert(err.response?.data?.error || 'Erreur lors de la modification');
         }
     };
 
     if (loading) return <div>Chargement...</div>;
 
     return (
-        <div className="entreprise-dashboard">
-            <header className="dashboard-header">
-                <h1>👋 Bienvenue, {profile?.raison_sociale || user.email}</h1>
-                <div className="header-actions">
-                    <button
-                        className="profile-btn"
-                        onClick={() => setShowProfileModal(true)}
-                    >
-                        👤 Mon Profil
-                    </button>
-                    <button
-                        className="create-btn"
-                        onClick={() => setShowCreateForm(!showCreateForm)}
-                    >
-                        {showCreateForm ? 'Annuler' : '+ Créer une offre'}
-                    </button>
-                    <button
-                        className="logout-btn"
-                        onClick={handleLogout}
-                    >
-                        🚪 Déconnexion
-                    </button>
-                </div>
-            </header>
-
-            {/* Tabs */}
+        <Layout title="Espace Entreprise">
             <div className="tabs">
                 <button
-                    className={activeTab === 'offers' ? 'tab active' : 'tab'}
+                    className={activeTab === 'offers' ? 'active' : ''}
                     onClick={() => setActiveTab('offers')}
                 >
-                    📄 Mes Offres
+                    Mes Offres ({offers.length})
                 </button>
                 <button
-                    className={activeTab === 'students' ? 'tab active' : 'tab'}
+                    className={activeTab === 'students' ? 'active' : ''}
                     onClick={() => setActiveTab('students')}
                 >
-                    👨‍🎓 Étudiants ({students.length})
+                    Etudiants ({students.length})
                 </button>
                 <button
-                    className={activeTab === 'candidatures' ? 'tab active' : 'tab'}
+                    className={activeTab === 'candidatures' ? 'active' : ''}
                     onClick={() => setActiveTab('candidatures')}
                 >
-                    📋 Candidatures ({candidatures.length})
+                    Candidatures ({candidatures.length})
+                </button>
+                <button
+                    className={activeTab === 'profil' ? 'active' : ''}
+                    onClick={() => setActiveTab('profil')}
+                >
+                    Mon profil
                 </button>
             </div>
 
@@ -282,6 +285,12 @@ function EntrepriseDashboard() {
             {/* Offers Tab */}
             {activeTab === 'offers' && (
                 <>
+                    <div className="section-header">
+                        <h2>Gestion des Offres</h2>
+                        <button className="btn-primary" onClick={() => setShowCreateForm(!showCreateForm)}>
+                            {showCreateForm ? 'Annuler' : '+ Creer une offre'}
+                        </button>
+                    </div>
 
                     {showCreateForm && (
                         <div className="create-offer-form">
@@ -338,48 +347,48 @@ function EntrepriseDashboard() {
                         </div>
                     )}
 
-                    <div className="offers-list">
-                        <h2>Vos Offres</h2>
-                        {offers.length === 0 ? (
-                            <p>Aucune offre n'a été postée pour le moment.</p>
-                        ) : (
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Type</th>
-                                        <th>Description (extrait)</th>
-                                        <th>Lieu</th>
-                                        <th>État Validation</th>
-                                        <th>Statut (Visible)</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {offers.map((offer) => (
-                                        <tr key={offer.id}>
-                                            <td><span className={`badge ${offer.type.toLowerCase()}`}>{offer.type}</span></td>
-                                            <td>{offer.description.substring(0, 50)}...</td>
-                                            <td>{offer.ville}, {offer.pays}</td>
-                                            <td>
-                                                <span className={`status-dot ${offer.etat === 'Validee' ? 'green' : offer.etat === 'Refusee' ? 'red' : 'orange'}`}></span>
+                    <div className="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Description</th>
+                                    <th>Lieu</th>
+                                    <th>Etat Validation</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {offers.map((offer) => (
+                                    <tr key={offer.id}>
+                                        <td><span className={`badge ${offer.type.toLowerCase()}`}>{offer.type}</span></td>
+                                        <td>{offer.description.substring(0, 50)}...</td>
+                                        <td>{offer.ville}, {offer.pays}</td>
+                                        <td>
+                                            <span className={offer.etat === 'Validee' ? 'status-valid' : offer.etat === 'Refusee' ? 'status-reject' : 'status-pending'}>
                                                 {offer.etat}
-                                            </td>
-                                            <td>
-                                                <button
-                                                    className={`toggle-btn ${offer.statut === 'ACTIVE' ? 'active' : 'inactive'}`}
-                                                    onClick={() => handleStatutToggle(offer.id, offer.statut)}
-                                                >
-                                                    {offer.statut}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button
+                                                className={`toggle-btn ${offer.statut === 'ACTIVE' ? 'active' : 'inactive'}`}
+                                                onClick={() => handleStatutToggle(offer.id, offer.statut)}
+                                            >
+                                                {offer.statut}
+                                            </button>
+                                        </td>
+                                        <td>
+                                            {offer.etat !== 'Validee' && (
+                                                <button className="btn-view" onClick={() => openEditModal(offer)}>
+                                                    Modifier
                                                 </button>
-                                            </td>
-                                            <td>
-                                                {/* Future: Edit button */}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </>
             )}
@@ -419,7 +428,7 @@ function EntrepriseDashboard() {
                                                 className="btn-view"
                                                 onClick={() => handleViewStudent(student.id)}
                                             >
-                                                👁️ Voir Profil
+                                                Voir Profil
                                             </button>
                                         </td>
                                     </tr>
@@ -485,11 +494,11 @@ function EntrepriseDashboard() {
                                         <td>
                                             {cand.statut === 'SOUMISE' ? (
                                                 <>
-                                                    <button className="btn-accept" onClick={() => handleAcceptCandidature(cand.id)}>
-                                                        ✅ Accepter
+                                                    <button className="btn-validate" onClick={() => handleAcceptCandidature(cand.id)}>
+                                                        Accepter
                                                     </button>
                                                     <button className="btn-reject" onClick={() => handleRejectCandidature(cand.id)}>
-                                                        ❌ Rejeter
+                                                        Rejeter
                                                     </button>
                                                 </>
                                             ) : (
@@ -504,22 +513,21 @@ function EntrepriseDashboard() {
                 </div>
             )}
 
-            {/* Modal Profil */}
-            {showProfileModal && (
-                <div className="modal" onClick={() => setShowProfileModal(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h2>Mon Profil Entreprise</h2>
-
-                        {profile && (
-                            <div className="profile-info">
-                                <p><strong>Email:</strong> {profile.email}</p>
-                                <p><strong>SIRET:</strong> {profile.siret}</p>
-                                <p><strong>Date de création:</strong> {new Date(profile.date_creation).toLocaleDateString()}</p>
-                                <p><strong>Statut:</strong> {profile.active ? '✅ Actif' : '❌ Inactif'}</p>
-                            </div>
-                        )}
-
-                        <form onSubmit={handleProfileSubmit}>
+            {/* Profil Tab */}
+            {activeTab === 'profil' && (
+                <div className="profil-section">
+                    <h2>Mon profil</h2>
+                    {profile && (
+                        <div className="profil-info">
+                            <p><strong>Email:</strong> {profile.email}</p>
+                            <p><strong>SIRET:</strong> {profile.siret}</p>
+                            <p><strong>Date de creation:</strong> {new Date(profile.date_creation).toLocaleDateString()}</p>
+                            <p><strong>Statut:</strong> {profile.active ? 'Actif' : 'Inactif'}</p>
+                        </div>
+                    )}
+                    <h3>Modifier mes informations</h3>
+                    <form onSubmit={handleProfileSubmit}>
+                        <div className="form-row">
                             <div className="form-group">
                                 <label>Raison Sociale</label>
                                 <input
@@ -529,17 +537,6 @@ function EntrepriseDashboard() {
                                     required
                                 />
                             </div>
-
-                            <div className="form-group">
-                                <label>Adresse</label>
-                                <textarea
-                                    value={profileForm.adresse}
-                                    onChange={(e) => setProfileForm({ ...profileForm, adresse: e.target.value })}
-                                    required
-                                    rows="3"
-                                />
-                            </div>
-
                             <div className="form-group">
                                 <label>Forme Juridique</label>
                                 <select
@@ -547,7 +544,7 @@ function EntrepriseDashboard() {
                                     onChange={(e) => setProfileForm({ ...profileForm, forme_juridique: e.target.value })}
                                     required
                                 >
-                                    <option value="">Sélectionner...</option>
+                                    <option value="">Selectionner...</option>
                                     <option value="SARL">SARL</option>
                                     <option value="SAS">SAS</option>
                                     <option value="SA">SA</option>
@@ -558,15 +555,20 @@ function EntrepriseDashboard() {
                                     <option value="Autre">Autre</option>
                                 </select>
                             </div>
-
-                            <div className="modal-actions">
-                                <button type="button" onClick={() => setShowProfileModal(false)}>Annuler</button>
-                                <button type="submit" className="create-btn" disabled={loading}>
-                                    {loading ? 'Enregistrement...' : 'Enregistrer'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        </div>
+                        <div className="form-group">
+                            <label>Adresse</label>
+                            <textarea
+                                value={profileForm.adresse}
+                                onChange={(e) => setProfileForm({ ...profileForm, adresse: e.target.value })}
+                                required
+                                rows="3"
+                            />
+                        </div>
+                        <button type="submit" className="btn-primary" disabled={loading}>
+                            {loading ? 'Enregistrement...' : 'Enregistrer'}
+                        </button>
+                    </form>
                 </div>
             )}
 
@@ -593,7 +595,91 @@ function EntrepriseDashboard() {
                     </div>
                 </div>
             )}
-        </div>
+
+            {/* Modal Edition Offre */}
+            {showEditModal && editingOffer && (
+                <div className="modal" onClick={() => setShowEditModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h2>Modifier l'offre</h2>
+                        <form onSubmit={handleEditSubmit}>
+                            <div className="form-group">
+                                <label>Description</label>
+                                <textarea
+                                    value={editingOffer.description}
+                                    onChange={(e) => setEditingOffer({ ...editingOffer, description: e.target.value })}
+                                    required
+                                    rows="4"
+                                />
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Pays</label>
+                                    <input
+                                        type="text"
+                                        value={editingOffer.pays}
+                                        onChange={(e) => setEditingOffer({ ...editingOffer, pays: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Ville</label>
+                                    <input
+                                        type="text"
+                                        value={editingOffer.ville}
+                                        onChange={(e) => setEditingOffer({ ...editingOffer, ville: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Remuneration (euros/mois)</label>
+                                    <input
+                                        type="number"
+                                        value={editingOffer.remuneration}
+                                        onChange={(e) => setEditingOffer({ ...editingOffer, remuneration: parseInt(e.target.value) })}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Duree (semaines)</label>
+                                    <input
+                                        type="number"
+                                        value={editingOffer.duree}
+                                        onChange={(e) => setEditingOffer({ ...editingOffer, duree: parseInt(e.target.value) })}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Date Debut</label>
+                                    <input
+                                        type="date"
+                                        value={editingOffer.date_debut}
+                                        onChange={(e) => setEditingOffer({ ...editingOffer, date_debut: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Date Expiration</label>
+                                    <input
+                                        type="date"
+                                        value={editingOffer.date_expiration}
+                                        onChange={(e) => setEditingOffer({ ...editingOffer, date_expiration: e.target.value })}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="modal-actions">
+                                <button type="button" onClick={() => setShowEditModal(false)}>Annuler</button>
+                                <button type="submit" className="btn-primary">Enregistrer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </Layout>
     );
 }
 

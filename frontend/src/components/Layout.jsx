@@ -124,6 +124,19 @@ function Layout({ children, title }) {
                                         ))
                                     )}
                                 </div>
+                                {user?.role === 'ENTREPRISE' && (
+                                    <div className="notification-footer">
+                                        <button
+                                            className="btn-link"
+                                            onClick={() => {
+                                                navigate('/entreprise');
+                                                setShowNotifications(false);
+                                            }}
+                                        >
+                                            Gerer mes offres
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>

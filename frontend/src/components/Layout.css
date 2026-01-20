@@ -196,3 +196,23 @@ header button:hover {
     opacity: 0.6;
     margin-top: 0.5rem;
 }
+
+.notification-footer {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.notification-footer .btn-link {
+    background: none;
+    border: none;
+    color: #667eea;
+    cursor: pointer;
+    font-weight: 500;
+    text-decoration: underline;
+}
+
+.notification-footer .btn-link:hover {
+    color: #5a6fd6;
+}
