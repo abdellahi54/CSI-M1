@@ -37,7 +37,7 @@ router.get('/:id', authMiddleware, withRole, async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Erreur serveur' });
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
     }
 });
 
@@ -92,6 +92,50 @@ router.post('/', authMiddleware, withRole, async (req, res) => {
     }
 });
 
+// PUT - Modifier ses propres informations (etudiant connecte)
+router.put('/me', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { nom, prenom, date_naissance, formation, annee_formation, statut, visibilite } = req.body;
+
+        await req.dbClient.query(`
+            UPDATE etudiant 
+            SET nom = COALESCE($1, nom),
+                prenom = COALESCE($2, prenom),
+                date_naissance = COALESCE($3, date_naissance),
+                formation = COALESCE($4, formation),
+                annee_formation = COALESCE($5, annee_formation),
+                statut = COALESCE($6, statut),
+                visibilite = COALESCE($7, visibilite)
+            WHERE id = $8
+        `, [nom, prenom, date_naissance, formation, annee_formation, statut, visibilite, req.userId]);
+
+        res.json({ message: 'Profil mis a jour' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
+// GET - Mes informations (etudiant connecte)
+router.get('/me', authMiddleware, withRole, async (req, res) => {
+    try {
+        const result = await req.dbClient.query(`
+            SELECT e.*, u.email
+            FROM etudiant e
+            JOIN utilisateur u ON e.id = u.id
+            WHERE e.id = $1
+        `, [req.userId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Profil non trouve' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
 // PUT - Modifier un étudiant
 router.put('/:id', authMiddleware, withRole, async (req, res) => {
     try {
@@ -112,7 +156,7 @@ router.put('/:id', authMiddleware, withRole, async (req, res) => {
         res.json({ message: 'Étudiant mis à jour' });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Erreur serveur' });
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
     }
 });
 
@@ -131,7 +175,7 @@ router.put('/:id/valider-rc', authMiddleware, withRole, async (req, res) => {
         res.json({ message: 'Attestation RC validée' });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Erreur serveur' });
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
     }
 });
 
@@ -143,7 +187,7 @@ router.delete('/:id', authMiddleware, withRole, async (req, res) => {
         res.json({ message: 'Étudiant supprimé' });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Erreur serveur' });
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
     }
 });
 

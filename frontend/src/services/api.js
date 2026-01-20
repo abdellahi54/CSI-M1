@@ -30,10 +30,16 @@ export const registerEntreprise = (data) =>
 // Étudiants
 export const getEtudiants = () => api.get('/etudiants');
 export const getEtudiant = (id) => api.get(`/etudiants/${id}`);
+export const getMyProfilEtudiant = () => api.get('/etudiants/me');
+export const updateMyProfilEtudiant = (data) => api.put('/etudiants/me', data);
 export const createEtudiant = (data) => api.post('/etudiants', data);
 export const updateEtudiant = (id, data) => api.put(`/etudiants/${id}`, data);
 export const validerRC = (id) => api.put(`/etudiants/${id}/valider-rc`, {});
 export const deleteEtudiant = (id) => api.delete(`/etudiants/${id}`);
+
+// Secretaire profil
+export const getMyProfilSecretaire = () => api.get('/secretaire/profil');
+export const updateMyProfilSecretaire = (data) => api.put('/secretaire/profil', data);
 
 // Admin
 export const getSecretaires = () => api.get('/admin/secretaires');
@@ -103,6 +109,27 @@ export const marquerToutesNotificationsLues = () => api.put('/enseignant/notific
 // Entreprise - Profile
 export const getEntrepriseProfile = () => api.get('/entreprise/profile');
 export const updateEntrepriseProfile = (data) => api.put('/entreprise/profile', data);
+// Documents RC
+export const getMyRC = () => api.get('/documents/rc/mine');
+export const getRCEtudiant = (etudiantId) => api.get(`/documents/rc/etudiant/${etudiantId}`);
+export const uploadRC = (file) => {
+    const formData = new FormData();
+    formData.append('document', file);
+    return api.post('/documents/rc/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
+};
+export const validerRCDocument = (etudiantId) => api.put(`/documents/rc/${etudiantId}/valider`);
+export const rejeterRCDocument = (etudiantId, motif) => api.put(`/documents/rc/${etudiantId}/rejeter`, { motif });
+export const deleteMyRC = () => api.delete('/documents/rc/mine');
+export const downloadRC = (id) => `${API_URL}/documents/rc/download/${id}`;
+
+// Notifications
+export const getMyNotifications = () => api.get('/notifications/mine');
+export const getUnreadCount = () => api.get('/notifications/unread-count');
+export const markAsRead = (id) => api.put(`/notifications/${id}/read`);
+export const markAllAsRead = () => api.put('/notifications/read-all');
+export const deleteNotification = (id) => api.delete(`/notifications/${id}`);
 
 // Entreprise - Etudiants
 export const getEtudiantsForEntreprise = () => api.get('/entreprise/etudiants');

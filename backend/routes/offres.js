@@ -37,7 +37,7 @@ router.get('/:id', authMiddleware, withRole, async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Erreur serveur' });
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
     }
 });
 
@@ -154,7 +154,7 @@ router.get('/entreprise/mine', authMiddleware, withRole, async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Erreur serveur' });
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
     }
 });
 

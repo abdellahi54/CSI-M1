@@ -28,6 +28,9 @@ const adminRoutes = require('./routes/admin');
 const enseignantRoutes = require('./routes/enseignant');
 const offresRoutes = require('./routes/offres');
 const candidaturesRoutes = require('./routes/candidatures');
+const documentsRoutes = require('./routes/documents');
+const { router: notificationsRoutes } = require('./routes/notifications');
+const secretaireRoutes = require('./routes/secretaire');
 
 // Routes API
 app.use('/api/etudiants', etudiantsRoutes);
@@ -37,6 +40,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/enseignant', enseignantRoutes);
 app.use('/api/offres', offresRoutes);
 app.use('/api/candidatures', candidaturesRoutes);
+app.use('/api/documents', documentsRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/secretaire', secretaireRoutes);
 
 // Démarrage du serveur
 app.listen(PORT, () => {

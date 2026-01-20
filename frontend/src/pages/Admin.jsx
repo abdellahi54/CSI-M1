@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getSecretaires, getEnseignants, createSecretaire, createEnseignant, deleteSecretaire, deleteEnseignant } from '../services/api';
+import { getSecretaires, getEnseignants, createSecretaire, createEnseignant } from '../services/api';
 import Layout from '../components/Layout';
 import './Admin.css';
 
@@ -54,21 +54,6 @@ function Admin() {
         }
     };
 
-    const handleDelete = async (type, id) => {
-        if (!confirm('Supprimer ce compte ?')) return;
-
-        try {
-            if (type === 'secretaire') {
-                await deleteSecretaire(id);
-            } else {
-                await deleteEnseignant(id);
-            }
-            loadData();
-        } catch (err) {
-            alert('Erreur: ' + err.message);
-        }
-    };
-
     return (
         <Layout title="Administration">
             <div className="admin-tabs">
@@ -100,8 +85,7 @@ function Admin() {
                             <th>Nom</th>
                             <th>Prénom</th>
                             <th>Email</th>
-                            <th>{activeTab === 'secretaires' ? 'En congé' : 'Droits secrétaire'}</th>
-                            <th>Actions</th>
+                            <th>{activeTab === 'secretaires' ? 'En conge' : 'Droits secretaire'}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -115,14 +99,6 @@ function Admin() {
                                         ? (item.en_conge ? 'Oui' : 'Non')
                                         : (item.droits_secretaire ? 'Oui' : 'Non')
                                     }
-                                </td>
-                                <td>
-                                    <button
-                                        className="btn-delete"
-                                        onClick={() => handleDelete(activeTab.slice(0, -1), item.id)}
-                                    >
-                                        Supprimer
-                                    </button>
                                 </td>
                             </tr>
                         ))}

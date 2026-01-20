@@ -38,7 +38,7 @@ router.get('/offre/:offreId', authMiddleware, withRole, async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Erreur serveur' });
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
     }
 });
 
@@ -63,20 +63,10 @@ router.get('/pending/all', authMiddleware, withRole, async (req, res) => {
     }
 });
 
-// POST - Postuler à une offre
+// POST - Postuler à une offre (triggers SGBD gèrent les règles métier)
 router.post('/', authMiddleware, withRole, async (req, res) => {
     try {
         const { offre_id, lettre_motivation } = req.body;
-
-        // Vérifier si l'étudiant a déjà postulé
-        const existing = await req.dbClient.query(
-            'SELECT id FROM candidature WHERE etudiant_id = $1 AND offre_id = $2',
-            [req.userId, offre_id]
-        );
-
-        if (existing.rows.length > 0) {
-            return res.status(400).json({ error: 'Vous avez déjà postulé à cette offre' });
-        }
 
         const result = await req.dbClient.query(`
             INSERT INTO candidature (etudiant_id, offre_id, statut, lettre_motivation)
