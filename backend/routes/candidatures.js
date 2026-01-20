@@ -144,4 +144,142 @@ router.put('/:id/validate', authMiddleware, withRole, async (req, res) => {
     }
 });
 
+// GET - Candidatures pour les offres de l'entreprise
+router.get('/entreprise/mine', authMiddleware, withRole, async (req, res) => {
+    try {
+        // Vérification du rôle
+        if (req.userRole !== 'ENTREPRISE') {
+            return res.status(403).json({ error: 'Accès refusé. Réservé aux entreprises.' });
+        }
+
+        const { offre_id } = req.query;
+
+        let query = `
+            SELECT c.*, 
+                   et.nom as etudiant_nom, et.prenom as etudiant_prenom, 
+                   et.formation, et.annee_formation, u.email as etudiant_email,
+                   o.description as offre_description, o.type as offre_type
+            FROM candidature c
+            JOIN offre o ON c.offre_id = o.id
+            JOIN etudiant et ON c.etudiant_id = et.id
+            JOIN utilisateur u ON et.id = u.id
+            WHERE o.entreprise_id = $1
+        `;
+
+        const params = [req.userId];
+
+        if (offre_id) {
+            query += ' AND c.offre_id = $2';
+            params.push(offre_id);
+        }
+
+        query += ' ORDER BY c.date_candidature DESC';
+
+        const result = await req.dbClient.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Erreur récupération candidatures:', err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
+// PUT - Accepter une candidature
+router.put('/:id/accept', authMiddleware, withRole, async (req, res) => {
+    try {
+        // Vérification du rôle
+        if (req.userRole !== 'ENTREPRISE') {
+            return res.status(403).json({ error: 'Accès refusé. Réservé aux entreprises.' });
+        }
+
+        const { id } = req.params;
+
+        // Vérifier que la candidature appartient à une offre de l'entreprise
+        const check = await req.dbClient.query(`
+            SELECT c.id FROM candidature c
+            JOIN offre o ON c.offre_id = o.id
+            WHERE c.id = $1 AND o.entreprise_id = $2 AND c.statut = 'SOUMISE'
+        `, [id, req.userId]);
+
+        if (check.rows.length === 0) {
+            return res.status(404).json({ error: 'Candidature non trouvée ou déjà traitée' });
+        }
+
+        await req.dbClient.query(`
+            UPDATE candidature 
+            SET statut = 'ACCEPTEE ENTREPRISE'
+            WHERE id = $1
+        `, [id]);
+
+        res.json({ message: 'Candidature acceptée avec succès' });
+    } catch (err) {
+        console.error('Erreur acceptation candidature:', err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
+// PUT - Rejeter une candidature
+router.put('/:id/reject', authMiddleware, withRole, async (req, res) => {
+    try {
+        // Vérification du rôle
+        if (req.userRole !== 'ENTREPRISE') {
+            return res.status(403).json({ error: 'Accès refusé. Réservé aux entreprises.' });
+        }
+
+        const { id } = req.params;
+
+        // Vérifier que la candidature appartient à une offre de l'entreprise
+        const check = await req.dbClient.query(`
+            SELECT c.id FROM candidature c
+            JOIN offre o ON c.offre_id = o.id
+            WHERE c.id = $1 AND o.entreprise_id = $2 AND c.statut = 'SOUMISE'
+        `, [id, req.userId]);
+
+        if (check.rows.length === 0) {
+            return res.status(404).json({ error: 'Candidature non trouvée ou déjà traitée' });
+        }
+
+        await req.dbClient.query(`
+            UPDATE candidature 
+            SET statut = 'REJETEE ENTREPRISE'
+            WHERE id = $1
+        `, [id]);
+
+        res.json({ message: 'Candidature rejetée' });
+    } catch (err) {
+        console.error('Erreur rejet candidature:', err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
+// GET - Détails étudiant pour une candidature
+router.get('/:id/student', authMiddleware, withRole, async (req, res) => {
+    try {
+        // Vérification du rôle
+        if (req.userRole !== 'ENTREPRISE') {
+            return res.status(403).json({ error: 'Accès refusé. Réservé aux entreprises.' });
+        }
+
+        const { id } = req.params;
+
+        // Vérifier que la candidature appartient à une offre de l'entreprise
+        const result = await req.dbClient.query(`
+            SELECT et.*, u.email
+            FROM candidature c
+            JOIN offre o ON c.offre_id = o.id
+            JOIN etudiant et ON c.etudiant_id = et.id
+            JOIN utilisateur u ON et.id = u.id
+            WHERE c.id = $1 AND o.entreprise_id = $2
+        `, [id, req.userId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Étudiant non trouvé' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Erreur récupération étudiant:', err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
 module.exports = router;
