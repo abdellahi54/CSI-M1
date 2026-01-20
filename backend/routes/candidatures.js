@@ -66,13 +66,13 @@ router.get('/pending/all', authMiddleware, withRole, async (req, res) => {
 // POST - Postuler à une offre (triggers SGBD gèrent les règles métier)
 router.post('/', authMiddleware, withRole, async (req, res) => {
     try {
-        const { offre_id, lettre_motivation } = req.body;
+        const { offre_id } = req.body;
 
         const result = await req.dbClient.query(`
-            INSERT INTO candidature (etudiant_id, offre_id, statut, lettre_motivation)
-            VALUES ($1, $2, 'SOUMISE', $3)
+            INSERT INTO candidature (etudiant_id, offre_id, statut)
+            VALUES ($1, $2, 'SOUMISE')
             RETURNING id
-        `, [req.userId, offre_id, lettre_motivation]);
+        `, [req.userId, offre_id]);
 
         res.status(201).json({
             message: 'Candidature soumise avec succès',

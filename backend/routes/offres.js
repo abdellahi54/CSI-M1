@@ -11,30 +11,9 @@ router.get('/', authMiddleware, withRole, async (req, res) => {
             FROM offre o
             JOIN entreprise e ON o.entreprise_id = e.id
             WHERE o.etat = 'VALDEE'
-            ORDER BY o.date_creation DESC
+            ORDER BY o.id DESC
         `);
         res.json(result.rows);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Erreur serveur', details: err.message });
-    }
-});
-
-// GET - Détails d'une offre
-router.get('/:id', authMiddleware, withRole, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const result = await req.dbClient.query(`
-            SELECT o.*, e.raison_sociale as entreprise_nom, e.adresse as entreprise_adresse
-            FROM offre o
-            JOIN entreprise e ON o.entreprise_id = e.id
-            WHERE o.id = $1
-        `, [id]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Offre non trouvée' });
-        }
-        res.json(result.rows[0]);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erreur serveur', details: err.message });
@@ -52,6 +31,27 @@ router.get('/pending/all', authMiddleware, withRole, async (req, res) => {
             ORDER BY o.date_creation DESC
         `);
         res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
+// GET - Détails d'une offre (DOIT être après les routes spécifiques)
+router.get('/:id', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await req.dbClient.query(`
+            SELECT o.*, e.raison_sociale as entreprise_nom, e.adresse as entreprise_adresse
+            FROM offre o
+            JOIN entreprise e ON o.entreprise_id = e.id
+            WHERE o.id = $1
+        `, [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Offre non trouvée' });
+        }
+        res.json(result.rows[0]);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erreur serveur', details: err.message });
