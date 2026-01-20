@@ -198,4 +198,43 @@ router.patch('/:id/statut', authMiddleware, withRole, async (req, res) => {
     }
 });
 
+// PUT - Modifier une offre (par entreprise uniquement)
+router.put('/:id', authMiddleware, withRole, async (req, res) => {
+    try {
+        if (req.userRole !== 'ENTREPRISE') {
+            return res.status(403).json({ error: 'Acces refuse.' });
+        }
+
+        const { id } = req.params;
+        const { description, remuneration, pays, ville, duree, date_debut, date_expiration } = req.body;
+
+        // Verifier que l'offre appartient a l'entreprise et n'est pas validee
+        const checkOwner = await req.dbClient.query(
+            'SELECT etat FROM offre WHERE id = $1 AND entreprise_id = $2',
+            [id, req.userId]
+        );
+
+        if (checkOwner.rows.length === 0) {
+            return res.status(404).json({ error: 'Offre non trouvee ou acces non autorise' });
+        }
+
+        if (checkOwner.rows[0].etat === 'Validee') {
+            return res.status(400).json({ error: 'Impossible de modifier une offre deja validee' });
+        }
+
+        await req.dbClient.query(`
+            UPDATE offre 
+            SET description = $1, remuneration = $2, pays = $3, ville = $4,
+                duree = $5, date_debut = $6, date_expiration = $7
+            WHERE id = $8
+        `, [description, remuneration, pays, ville, duree, date_debut, date_expiration, id]);
+
+        res.json({ message: 'Offre modifiee avec succes' });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur modification', details: err.message });
+    }
+});
+
 module.exports = router;
