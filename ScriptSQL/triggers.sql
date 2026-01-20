@@ -51,16 +51,12 @@ BEGIN
             'Offre refusée',
             'Votre offre a été refusée par le responsable pédagogique.'
         );
-
-        IF NEW.justification IS NULL THEN
-            RAISE EXCEPTION
-            'Justification obligatoire pour un refus';
-        END IF;
     END IF;
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER;
 
 CREATE TRIGGER trg_refus_offre
 BEFORE UPDATE ON offre
@@ -193,12 +189,13 @@ RETURNS TRIGGER AS $$
 DECLARE
     montant_min INTEGER;
 BEGIN
+    -- Utilise NEW.duree directement (même unité que bareme: semaines ou mois)
     SELECT montant_minimal
     INTO montant_min
     FROM bareme_remuneration
     WHERE type_offre = NEW.type
       AND pays = NEW.pays
-      AND NEW.date_expiration - NEW.date_debut BETWEEN duree_min AND duree_max;
+      AND NEW.duree BETWEEN duree_min AND duree_max;
 
     IF montant_min IS NOT NULL AND NEW.remuneration < montant_min THEN
         INSERT INTO notification (
@@ -209,18 +206,19 @@ BEGIN
         VALUES (
             NEW.entreprise_id,
             'Rémunération non conforme',
-            'La rémunération proposée est inférieure au minimum légal.'
+            'La rémunération proposée (' || NEW.remuneration || '€) est inférieure au minimum légal (' || montant_min || '€).'
         );
 
-        RAISE EXCEPTION 'Rémunération illégale';
+        RAISE EXCEPTION 'Rémunération illégale: % € proposés, minimum requis: % €', NEW.remuneration, montant_min;
     END IF;
 
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+SECURITY DEFINER;
 
 CREATE TRIGGER trg_remuneration_legale
-BEFORE INSERT OR UPDATE ON offre
+BEFORE INSERT ON offre
 FOR EACH ROW
 EXECUTE FUNCTION check_remuneration_legale();
 

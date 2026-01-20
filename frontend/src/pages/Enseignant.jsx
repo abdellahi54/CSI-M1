@@ -49,11 +49,11 @@ function Enseignant() {
     const [showBaremeModal, setShowBaremeModal] = useState(false);
     const [baremeEditId, setBaremeEditId] = useState(null);
     const [baremeForm, setBaremeForm] = useState({
-        type_contrat: 'STAGE',
+        type_offre: 'STAGE',
         pays: 'France',
         duree_min: 0,
         duree_max: 0,
-        montant_min: 0,
+        montant_minimal: 0,
         description: ''
     });
 
@@ -184,21 +184,21 @@ function Enseignant() {
         if (bareme) {
             setBaremeEditId(bareme.id);
             setBaremeForm({
-                type_contrat: bareme.type_contrat,
+                type_offre: bareme.type_offre,
                 pays: bareme.pays,
                 duree_min: bareme.duree_min,
                 duree_max: bareme.duree_max,
-                montant_min: bareme.montant_min,
+                montant_minimal: bareme.montant_minimal,
                 description: bareme.description || ''
             });
         } else {
             setBaremeEditId(null);
             setBaremeForm({
-                type_contrat: 'STAGE',
+                type_offre: 'STAGE',
                 pays: 'France',
                 duree_min: 0,
                 duree_max: 0,
-                montant_min: 0,
+                montant_minimal: 0,
                 description: ''
             });
         }
@@ -485,11 +485,11 @@ function Enseignant() {
                                 ) : (
                                     baremes.map(bareme => (
                                         <tr key={bareme.id}>
-                                            <td><span className={`badge ${bareme.type_contrat?.toLowerCase()}`}>{bareme.type_contrat}</span></td>
+                                            <td><span className={`badge ${bareme.type_offre?.toLowerCase()}`}>{bareme.type_offre}</span></td>
                                             <td>{bareme.pays}</td>
-                                            <td>{bareme.duree_min} mois</td>
-                                            <td>{bareme.duree_max} mois</td>
-                                            <td>{bareme.montant_min} €/mois</td>
+                                            <td>{bareme.duree_min} semaines</td>
+                                            <td>{bareme.duree_max} semaines</td>
+                                            <td>{bareme.montant_minimal} €/mois</td>
                                             <td>{bareme.description || '-'}</td>
                                             <td className="actions">
                                                 <button className="btn-edit" onClick={() => openBaremeModal(bareme)}>Modifier</button>
@@ -684,7 +684,7 @@ function Enseignant() {
                             <div className="form-row">
                                 <div className="form-group">
                                     <label>Type de contrat</label>
-                                    <select value={baremeForm.type_contrat} onChange={e => setBaremeForm({ ...baremeForm, type_contrat: e.target.value })}>
+                                    <select value={baremeForm.type_offre} onChange={e => setBaremeForm({ ...baremeForm, type_offre: e.target.value })}>
                                         <option value="STAGE">Stage</option>
                                         <option value="ALTERNANCE">Alternance</option>
                                         <option value="CDD">CDD</option>
@@ -697,17 +697,17 @@ function Enseignant() {
                             </div>
                             <div className="form-row">
                                 <div className="form-group">
-                                    <label>Durée min (mois)</label>
+                                    <label>Durée min (semaines)</label>
                                     <input type="number" value={baremeForm.duree_min} onChange={e => setBaremeForm({ ...baremeForm, duree_min: parseInt(e.target.value) })} required />
                                 </div>
                                 <div className="form-group">
-                                    <label>Durée max (mois)</label>
+                                    <label>Durée max (semaines)</label>
                                     <input type="number" value={baremeForm.duree_max} onChange={e => setBaremeForm({ ...baremeForm, duree_max: parseInt(e.target.value) })} required />
                                 </div>
                             </div>
                             <div className="form-group">
                                 <label>Montant minimum (€/mois)</label>
-                                <input type="number" step="0.01" value={baremeForm.montant_min} onChange={e => setBaremeForm({ ...baremeForm, montant_min: parseFloat(e.target.value) })} required />
+                                <input type="number" step="0.01" value={baremeForm.montant_minimal} onChange={e => setBaremeForm({ ...baremeForm, montant_minimal: parseFloat(e.target.value) })} required />
                             </div>
                             <div className="form-group">
                                 <label>Description</label>

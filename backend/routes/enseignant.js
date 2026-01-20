@@ -65,6 +65,12 @@ router.put('/offres/:id/refuser', authMiddleware, withRole, async (req, res) => 
         const { id } = req.params;
         const { motif } = req.body;
 
+        if (!motif) {
+            return res.status(400).json({ error: 'Le motif de refus est obligatoire' });
+        }
+
+        // Note: La colonne 'justification' n'existe pas dans la table offre.
+        // Il faut exécuter: ALTER TABLE offre ADD COLUMN justification TEXT;
         await req.dbClient.query(`
             UPDATE offre 
             SET etat = 'NON VALDEE',

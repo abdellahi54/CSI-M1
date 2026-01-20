@@ -24,5 +24,8 @@ GRANT INSERT ON utilisateur TO role_enseignant;
 -- Permissions sur les séquences (pour les INSERT avec auto-increment)
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO role_enseignant;
 
+-- Permissions explicites sur la séquence notification
+GRANT USAGE, SELECT, UPDATE ON SEQUENCE notification_identifiant_seq TO role_enseignant;
+
 -- Message de confirmation
 SELECT 'Permissions accordées au role_enseignant' AS resultat;
