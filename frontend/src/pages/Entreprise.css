@@ -66,6 +66,36 @@
     background-color: #dc2626;
 }
 
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.tab {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.tab:hover {
+    color: #334155;
+    background: #f8f9fa;
+}
+
+.tab.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+    font-weight: 600;
+}
+
 /* Form */
 .create-offer-form {
     background: #2d3748;
@@ -299,4 +329,58 @@ th {
 
 .modal-actions button[type="button"]:hover {
     background: #cbd5e1;
+}
+
+/* Students List */
+.students-list {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+}
+
+.students-list h2 {
+    color: #1a1a2e;
+    margin-bottom: 1.5rem;
+}
+
+/* Formation Badges */
+.badge-formation {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.badge-formation.miage {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.badge-formation.tal {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.badge-formation.sciences_cognitives {
+    background: #d1fae5;
+    color: #059669;
+}
+
+/* View Button */
+.btn-view {
+    background: #667eea;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.btn-view:hover {
+    background: #5a6fd6;
+    transform: translateY(-1px);
 }

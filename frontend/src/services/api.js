@@ -104,4 +104,8 @@ export const marquerToutesNotificationsLues = () => api.put('/enseignant/notific
 export const getEntrepriseProfile = () => api.get('/entreprise/profile');
 export const updateEntrepriseProfile = (data) => api.put('/entreprise/profile', data);
 
+// Entreprise - Etudiants
+export const getEtudiantsForEntreprise = () => api.get('/entreprise/etudiants');
+export const getEtudiantDetails = (id) => api.get(`/entreprise/etudiants/${id}`);
+
 export default api;
