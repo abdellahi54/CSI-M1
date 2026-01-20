@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { getEntrepriseProfile, updateEntrepriseProfile } from '../services/api';
+import { getEntrepriseProfile, updateEntrepriseProfile, getEtudiantsForEntreprise, getEtudiantDetails } from '../services/api';
 import './Entreprise.css';
 
 function EntrepriseDashboard() {
@@ -22,6 +22,14 @@ function EntrepriseDashboard() {
         forme_juridique: ''
     });
 
+    // Tab State
+    const [activeTab, setActiveTab] = useState('offers'); // 'offers' | 'students'
+
+    // Students State
+    const [students, setStudents] = useState([]);
+    const [selectedStudent, setSelectedStudent] = useState(null);
+    const [showStudentModal, setShowStudentModal] = useState(false);
+
     // Form State
     const [formData, setFormData] = useState({
         type: 'STAGE',
@@ -37,6 +45,7 @@ function EntrepriseDashboard() {
     useEffect(() => {
         fetchOffers();
         fetchProfile();
+        fetchStudents();
     }, []);
 
     const fetchOffers = async () => {
@@ -83,6 +92,26 @@ function EntrepriseDashboard() {
             alert(err.response?.data?.error || 'Erreur lors de la mise à jour');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchStudents = async () => {
+        try {
+            const response = await getEtudiantsForEntreprise();
+            setStudents(response.data);
+        } catch (err) {
+            console.error('Erreur chargement étudiants:', err);
+        }
+    };
+
+    const handleViewStudent = async (studentId) => {
+        try {
+            const response = await getEtudiantDetails(studentId);
+            setSelectedStudent(response.data);
+            setShowStudentModal(true);
+        } catch (err) {
+            console.error('Erreur chargement détails étudiant:', err);
+            alert('Impossible de charger les détails de l\'étudiant');
         }
     };
 
@@ -174,106 +203,174 @@ function EntrepriseDashboard() {
                 </div>
             </header>
 
+            {/* Tabs */}
+            <div className="tabs">
+                <button
+                    className={activeTab === 'offers' ? 'tab active' : 'tab'}
+                    onClick={() => setActiveTab('offers')}
+                >
+                    📄 Mes Offres
+                </button>
+                <button
+                    className={activeTab === 'students' ? 'tab active' : 'tab'}
+                    onClick={() => setActiveTab('students')}
+                >
+                    👨‍🎓 Étudiants Disponibles ({students.length})
+                </button>
+            </div>
+
             {error && <div className="error-message">{error}</div>}
 
-            {showCreateForm && (
-                <div className="create-offer-form">
-                    <h2>Nouvelle Offre</h2>
-                    <form onSubmit={handleCreateSubmit}>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Type</label>
-                                <select name="type" value={formData.type} onChange={handleInputChange}>
-                                    <option value="STAGE">Stage</option>
-                                    <option value="ALTERNANCE">Alternance</option>
-                                    <option value="CDD">CDD</option>
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Pays</label>
-                                <input name="pays" value={formData.pays} onChange={handleInputChange} required />
-                            </div>
-                            <div className="form-group">
-                                <label>Ville</label>
-                                <input name="ville" value={formData.ville} onChange={handleInputChange} required />
-                            </div>
-                        </div>
+            {/* Offers Tab */}
+            {activeTab === 'offers' && (
+                <>
 
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Rémunération (€/mois)</label>
-                                <input type="number" name="remuneration" value={formData.remuneration} onChange={handleInputChange} required />
-                            </div>
-                            <div className="form-group">
-                                <label>Durée (semaines)</label>
-                                <input type="number" name="duree" value={formData.duree} onChange={handleInputChange} required />
-                            </div>
-                        </div>
+                    {showCreateForm && (
+                        <div className="create-offer-form">
+                            <h2>Nouvelle Offre</h2>
+                            <form onSubmit={handleCreateSubmit}>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Type</label>
+                                        <select name="type" value={formData.type} onChange={handleInputChange}>
+                                            <option value="STAGE">Stage</option>
+                                            <option value="ALTERNANCE">Alternance</option>
+                                            <option value="CDD">CDD</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Pays</label>
+                                        <input name="pays" value={formData.pays} onChange={handleInputChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Ville</label>
+                                        <input name="ville" value={formData.ville} onChange={handleInputChange} required />
+                                    </div>
+                                </div>
 
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Date Début</label>
-                                <input type="date" name="date_debut" value={formData.date_debut} onChange={handleInputChange} required />
-                            </div>
-                            <div className="form-group">
-                                <label>Date Expiration</label>
-                                <input type="date" name="date_expiration" value={formData.date_expiration} onChange={handleInputChange} required />
-                            </div>
-                        </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Rémunération (€/mois)</label>
+                                        <input type="number" name="remuneration" value={formData.remuneration} onChange={handleInputChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Durée (semaines)</label>
+                                        <input type="number" name="duree" value={formData.duree} onChange={handleInputChange} required />
+                                    </div>
+                                </div>
 
-                        <div className="form-group">
-                            <label>Description</label>
-                            <textarea name="description" value={formData.description} onChange={handleInputChange} required rows="4"></textarea>
-                        </div>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label>Date Début</label>
+                                        <input type="date" name="date_debut" value={formData.date_debut} onChange={handleInputChange} required />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Date Expiration</label>
+                                        <input type="date" name="date_expiration" value={formData.date_expiration} onChange={handleInputChange} required />
+                                    </div>
+                                </div>
 
-                        <button type="submit" className="submit-btn">Publier l'offre</button>
-                    </form>
-                </div>
+                                <div className="form-group">
+                                    <label>Description</label>
+                                    <textarea name="description" value={formData.description} onChange={handleInputChange} required rows="4"></textarea>
+                                </div>
+
+                                <button type="submit" className="submit-btn">Publier l'offre</button>
+                            </form>
+                        </div>
+                    )}
+
+                    <div className="offers-list">
+                        <h2>Vos Offres</h2>
+                        {offers.length === 0 ? (
+                            <p>Aucune offre n'a été postée pour le moment.</p>
+                        ) : (
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Description (extrait)</th>
+                                        <th>Lieu</th>
+                                        <th>État Validation</th>
+                                        <th>Statut (Visible)</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {offers.map((offer) => (
+                                        <tr key={offer.id}>
+                                            <td><span className={`badge ${offer.type.toLowerCase()}`}>{offer.type}</span></td>
+                                            <td>{offer.description.substring(0, 50)}...</td>
+                                            <td>{offer.ville}, {offer.pays}</td>
+                                            <td>
+                                                <span className={`status-dot ${offer.etat === 'Validee' ? 'green' : offer.etat === 'Refusee' ? 'red' : 'orange'}`}></span>
+                                                {offer.etat}
+                                            </td>
+                                            <td>
+                                                <button
+                                                    className={`toggle-btn ${offer.statut === 'ACTIVE' ? 'active' : 'inactive'}`}
+                                                    onClick={() => handleStatutToggle(offer.id, offer.statut)}
+                                                >
+                                                    {offer.statut}
+                                                </button>
+                                            </td>
+                                            <td>
+                                                {/* Future: Edit button */}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </>
             )}
 
-            <div className="offers-list">
-                <h2>Vos Offres</h2>
-                {offers.length === 0 ? (
-                    <p>Aucune offre n'a été postée pour le moment.</p>
-                ) : (
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Type</th>
-                                <th>Description (extrait)</th>
-                                <th>Lieu</th>
-                                <th>État Validation</th>
-                                <th>Statut (Visible)</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {offers.map((offer) => (
-                                <tr key={offer.id}>
-                                    <td><span className={`badge ${offer.type.toLowerCase()}`}>{offer.type}</span></td>
-                                    <td>{offer.description.substring(0, 50)}...</td>
-                                    <td>{offer.ville}, {offer.pays}</td>
-                                    <td>
-                                        <span className={`status-dot ${offer.etat === 'Validee' ? 'green' : offer.etat === 'Refusee' ? 'red' : 'orange'}`}></span>
-                                        {offer.etat}
-                                    </td>
-                                    <td>
-                                        <button
-                                            className={`toggle-btn ${offer.statut === 'ACTIVE' ? 'active' : 'inactive'}`}
-                                            onClick={() => handleStatutToggle(offer.id, offer.statut)}
-                                        >
-                                            {offer.statut}
-                                        </button>
-                                    </td>
-                                    <td>
-                                        {/* Future: Edit button */}
-                                    </td>
+            {/* Students Tab */}
+            {activeTab === 'students' && (
+                <div className="students-list">
+                    <h2>Étudiants en Recherche</h2>
+                    {students.length === 0 ? (
+                        <p>Aucun étudiant disponible pour le moment.</p>
+                    ) : (
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Prénom</th>
+                                    <th>Formation</th>
+                                    <th>Année</th>
+                                    <th>Email</th>
+                                    <th>Actions</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </div>
+                            </thead>
+                            <tbody>
+                                {students.map((student) => (
+                                    <tr key={student.id}>
+                                        <td>{student.nom}</td>
+                                        <td>{student.prenom}</td>
+                                        <td>
+                                            <span className={`badge-formation ${student.formation?.toLowerCase()}`}>
+                                                {student.formation}
+                                            </span>
+                                        </td>
+                                        <td>M{student.annee_formation}</td>
+                                        <td>{student.email}</td>
+                                        <td>
+                                            <button
+                                                className="btn-view"
+                                                onClick={() => handleViewStudent(student.id)}
+                                            >
+                                                👁️ Voir Profil
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            )}
 
             {/* Modal Profil */}
             {showProfileModal && (
@@ -337,6 +434,30 @@ function EntrepriseDashboard() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Étudiant Détails */}
+            {showStudentModal && selectedStudent && (
+                <div className="modal" onClick={() => setShowStudentModal(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h2>Profil Étudiant</h2>
+
+                        <div className="profile-info">
+                            <p><strong>Nom:</strong> {selectedStudent.nom}</p>
+                            <p><strong>Prénom:</strong> {selectedStudent.prenom}</p>
+                            <p><strong>Email:</strong> {selectedStudent.email}</p>
+                            <p><strong>N° Étudiant:</strong> {selectedStudent.num_etudiant}</p>
+                            <p><strong>Date de naissance:</strong> {new Date(selectedStudent.date_naissance).toLocaleDateString()}</p>
+                            <p><strong>Formation:</strong> <span className={`badge-formation ${selectedStudent.formation?.toLowerCase()}`}>{selectedStudent.formation}</span></p>
+                            <p><strong>Année:</strong> M{selectedStudent.annee_formation}</p>
+                            <p><strong>RC:</strong> {selectedStudent.responsabilite_civile ? '✅ Validée' : '⏳ En attente'}</p>
+                        </div>
+
+                        <div className="modal-actions">
+                            <button type="button" onClick={() => setShowStudentModal(false)}>Fermer</button>
+                        </div>
                     </div>
                 </div>
             )}
