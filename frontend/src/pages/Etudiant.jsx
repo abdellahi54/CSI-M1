@@ -117,18 +117,18 @@ function Etudiant() {
 
     const getStatusLabel = (statut) => {
         const labels = {
-            'Soumise': { text: 'Soumise', class: 'status-pending' },
-            'AccepteeEntreprise': { text: 'Acceptee entreprise', class: 'status-valid' },
-            'RejeteeEntreprise': { text: 'Rejetee entreprise', class: 'status-rejected' },
-            'Validee': { text: 'Validee', class: 'status-valid' },
-            'RefuseeResponsable': { text: 'Refusee', class: 'status-rejected' },
-            'Annulee': { text: 'Annulee', class: 'status-cancelled' }
+            'SOUMISE': { text: 'Soumise', class: 'status-pending' },
+            'ACCEPTEE ENTREPRISE': { text: 'Acceptee entreprise', class: 'status-valid' },
+            'REJETEE ENTREPRISE': { text: 'Rejetee entreprise', class: 'status-rejected' },
+            'VALIDEE': { text: 'Validee', class: 'status-valid' },
+            'REFUSEE RESPONSABLE': { text: 'Refusee', class: 'status-rejected' },
+            'RENONCEE': { text: 'Annulee', class: 'status-cancelled' }
         };
         return labels[statut] || { text: statut, class: '' };
     };
 
     const alreadyApplied = (offreId) => {
-        return candidatures.some(c => c.offre_id === offreId && c.statut !== 'Annulee');
+        return candidatures.some(c => c.offre_id === offreId && c.statut !== 'RENONCEE');
     };
 
     return (
@@ -216,7 +216,7 @@ function Etudiant() {
                                         <td>{new Date(c.date_candidature).toLocaleDateString()}</td>
                                         <td className={status.class}>{status.text}</td>
                                         <td>
-                                            {c.statut === 'Soumise' && (
+                                            {c.statut === 'SOUMISE' && (
                                                 <button className="btn-cancel" onClick={() => handleCancel(c.id)}>
                                                     Annuler
                                                 </button>

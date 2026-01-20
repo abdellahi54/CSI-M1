@@ -91,7 +91,7 @@ router.put('/:id/cancel', authMiddleware, withRole, async (req, res) => {
 
         await req.dbClient.query(`
             UPDATE candidature 
-            SET statut = 'Annulee'
+            SET statut = 'RENONCEE'
             WHERE id = $1 AND etudiant_id = $2 AND statut = 'SOUMISE'
         `, [id, req.userId]);
 

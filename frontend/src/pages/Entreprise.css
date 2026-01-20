@@ -343,6 +343,15 @@ th {
     margin-bottom: 1.5rem;
 }
 
+.students-list table td {
+    color: #333;
+}
+
+.students-list table th {
+    background-color: #4a5568;
+    color: #e2e8f0;
+}
+
 /* Formation Badges */
 .badge-formation {
     display: inline-block;

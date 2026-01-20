@@ -109,6 +109,7 @@ export const marquerToutesNotificationsLues = () => api.put('/enseignant/notific
 // Entreprise - Profile
 export const getEntrepriseProfile = () => api.get('/entreprise/profile');
 export const updateEntrepriseProfile = (data) => api.put('/entreprise/profile', data);
+
 // Documents RC
 export const getMyRC = () => api.get('/documents/rc/mine');
 export const getRCEtudiant = (etudiantId) => api.get(`/documents/rc/etudiant/${etudiantId}`);
