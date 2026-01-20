@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Admin from './pages/Admin';
 import Secretaire from './pages/Secretaire';
 import Etudiant from './pages/Etudiant';
+import Entreprise from './pages/Entreprise';
 import Enseignant from './pages/Enseignant';
 import RegisterEntreprise from './pages/RegisterEntreprise';
 import './App.css';
@@ -53,6 +54,16 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['ENSEIGNANT RESPONSABLE']}>
                 <Enseignant />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Routes protégées Entreprise */}
+          <Route
+            path="/entreprise"
+            element={
+              <ProtectedRoute allowedRoles={['ENTREPRISE']}>
+                <Entreprise />
               </ProtectedRoute>
             }
           />

@@ -71,7 +71,9 @@ export const getEnseignantProfil = () => api.get('/enseignant/profil');
 export const updateEnseignantProfil = (data) => api.put('/enseignant/profil', data);
 
 // Enseignant - Offres
+// Offres pour enseignant
 export const getOffresEnAttente = () => api.get('/enseignant/offres');
+export const getToutesLesOffres = () => api.get('/offres/all/offers');
 export const getToutesOffres = () => api.get('/enseignant/offres/toutes');
 export const validerOffre = (id) => api.put(`/enseignant/offres/${id}/valider`);
 export const refuserOffre = (id, motif) => api.put(`/enseignant/offres/${id}/refuser`, { motif });
@@ -97,5 +99,9 @@ export const getNotifications = () => api.get('/enseignant/notifications');
 export const getNotificationsCount = () => api.get('/enseignant/notifications/count');
 export const marquerNotificationLue = (id) => api.put(`/enseignant/notifications/${id}/lire`);
 export const marquerToutesNotificationsLues = () => api.put('/enseignant/notifications/lire-toutes');
+
+// Entreprise - Profile
+export const getEntrepriseProfile = () => api.get('/entreprise/profile');
+export const updateEntrepriseProfile = (data) => api.put('/entreprise/profile', data);
 
 export default api;

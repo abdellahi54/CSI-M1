@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
     getOffresEnAttente,
+    getToutesLesOffres,
     validerOffre,
     refuserOffre,
     getCandidaturesAValider,
@@ -71,11 +72,23 @@ function Enseignant() {
 
     const loadData = async () => {
         try {
+<<<<<<< HEAD
             const [offresRes, candRes, baremesRes, statsRes] = await Promise.all([
                 getOffresEnAttente().catch(() => ({ data: [] })),
                 getCandidaturesAValider().catch(() => ({ data: [] })),
                 getBaremes().catch(() => ({ data: [] })),
                 getEnseignantStats().catch(() => ({ data: {} }))
+=======
+            const [offresRes, candRes, baremesRes, statsRes, profilRes, droitsRes, notifRes, notifCountRes] = await Promise.all([
+                getToutesLesOffres(),
+                getCandidaturesAValider(),
+                getBaremes(),
+                getEnseignantStats(),
+                getEnseignantProfil(),
+                getDroitsSecretaire(),
+                getNotifications(),
+                getNotificationsCount()
+>>>>>>> 4f7342cb350807b3a005d1478b1ad195a60d9a19
             ]);
 
             setOffres(offresRes.data);
@@ -348,23 +361,25 @@ function Enseignant() {
             {activeTab === 'offres' && (
                 <>
                     <div className="section-header">
-                        <h2>Offres en attente de validation</h2>
+                        <h2>Toutes les Offres</h2>
                     </div>
                     <div className="table-container">
                         <table>
                             <thead>
                                 <tr>
                                     <th>Entreprise</th>
-                                    <th>Titre</th>
+                                    <th>Description (extrait)</th>
                                     <th>Type</th>
+                                    <th>État</th>
                                     <th>Rémunération</th>
                                     <th>Durée</th>
-                                    <th>Date dépôt</th>
+                                    <th>Date début</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {offres.length === 0 ? (
+<<<<<<< HEAD
                                     <tr><td colSpan="7" className="empty">Aucune offre en attente de validation</td></tr>
                                 ) : (
                                     offres.map(offre => (
@@ -385,6 +400,37 @@ function Enseignant() {
                                             </td>
                                         </tr>
                                     ))
+=======
+                                    <tr><td colSpan="8" className="empty">Aucune offre</td></tr>
+                                ) : (
+                                    <tr key={offre.id}>
+                                        <td>{offre.entreprise_nom}</td>
+                                        <td>{offre.description?.substring(0, 50)}...</td>
+                                        <td><span className={`badge ${offre.type?.toLowerCase()}`}>{offre.type}</span></td>
+                                        <td>
+                                            <span className={`badge-etat ${offre.etat === 'Validee' ? 'validee' : offre.etat === 'Refusee' ? 'refusee' : 'attente'}`}>
+                                                {offre.etat || 'EN ATTENTE DE VALIDATION'}
+                                            </span>
+                                        </td>
+                                        <td>{offre.remuneration}€/mois</td>
+                                        <td>{offre.duree} semaines</td>
+                                        <td>{new Date(offre.date_debut).toLocaleDateString()}</td>
+                                        <td className="actions">
+                                            {offre.etat === 'EN ATTENTE DE VALIDATION' ? (
+                                                <>
+                                                    <button className="btn-validate" onClick={() => handleValiderOffre(offre.id)} disabled={loading}>
+                                                        ✅ Valider
+                                                    </button>
+                                                    <button className="btn-refuse" onClick={() => openRefusModal(offre)} disabled={loading}>
+                                                        ❌ Refuser
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <span className="small-text">-</span>
+                                            )}
+                                        </td>
+                                    </tr>
+>>>>>>> 4f7342cb350807b3a005d1478b1ad195a60d9a19
                                 )}
                             </tbody>
                         </table>
