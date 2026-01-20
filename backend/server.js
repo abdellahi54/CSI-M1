@@ -9,6 +9,12 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Log middleware
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+});
+
 // Routes de base
 app.get('/', (req, res) => {
     res.json({ message: 'API Gestion Stages IDMC - OK' });
@@ -19,7 +25,7 @@ const etudiantsRoutes = require('./routes/etudiants');
 const authRoutes = require('./routes/auth');
 const testRoutes = require('./routes/test');
 const adminRoutes = require('./routes/admin');
-// const enseignantRoutes = require('./routes/enseignant'); // Désactivé temporairement car cause des erreurs de schéma
+const enseignantRoutes = require('./routes/enseignant');
 const offresRoutes = require('./routes/offres');
 const candidaturesRoutes = require('./routes/candidatures');
 
@@ -28,7 +34,7 @@ app.use('/api/etudiants', etudiantsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/admin', adminRoutes);
-// app.use('/api/enseignant', enseignantRoutes);
+app.use('/api/enseignant', enseignantRoutes);
 app.use('/api/offres', offresRoutes);
 app.use('/api/candidatures', candidaturesRoutes);
 

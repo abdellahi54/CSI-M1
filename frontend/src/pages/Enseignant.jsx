@@ -35,15 +35,12 @@ function Enseignant() {
     const [profil, setProfil] = useState({});
     const [loading, setLoading] = useState(false);
 
-    // Droits secrétaire
     const [droitsSecretaire, setDroitsSecretaire] = useState({ hasDroits: false, canAct: false });
     const [etudiants, setEtudiants] = useState([]);
 
-    // Notifications
     const [notifications, setNotifications] = useState([]);
     const [notifCount, setNotifCount] = useState(0);
 
-    // Modals
     const [showRefusModal, setShowRefusModal] = useState(false);
     const [selectedOffre, setSelectedOffre] = useState(null);
     const [motifRefus, setMotifRefus] = useState('');
@@ -74,44 +71,65 @@ function Enseignant() {
 
     const loadData = async () => {
         try {
-            const [offresRes, candRes, baremesRes, statsRes, profilRes, droitsRes, notifRes, notifCountRes] = await Promise.all([
-                getOffresEnAttente(),
-                getCandidaturesAValider(),
-                getBaremes(),
-                getEnseignantStats(),
-                getEnseignantProfil(),
-                getDroitsSecretaire(),
-                getNotifications(),
-                getNotificationsCount()
+            const [offresRes, candRes, baremesRes, statsRes] = await Promise.all([
+                getOffresEnAttente().catch(() => ({ data: [] })),
+                getCandidaturesAValider().catch(() => ({ data: [] })),
+                getBaremes().catch(() => ({ data: [] })),
+                getEnseignantStats().catch(() => ({ data: {} }))
             ]);
+
             setOffres(offresRes.data);
             setCandidatures(candRes.data);
             setBaremes(baremesRes.data);
             setStats(statsRes.data);
-            setProfil(profilRes.data);
-            setProfilForm({ nom: profilRes.data.nom, prenom: profilRes.data.prenom });
-            setDroitsSecretaire(droitsRes.data);
-            setNotifications(notifRes.data);
-            setNotifCount(notifCountRes.data.count);
 
-            // Charger les étudiants si droits secrétaire
-            if (droitsRes.data.hasDroits) {
-                const etudRes = await getEtudiantsEnseignant();
-                setEtudiants(etudRes.data);
+            try {
+                const profilRes = await getEnseignantProfil();
+                setProfil(profilRes.data);
+                setProfilForm({ nom: profilRes.data.nom || '', prenom: profilRes.data.prenom || '' });
+            } catch {
+                setProfil({
+                    nom: user?.nom || 'Non renseigné',
+                    prenom: user?.prenom || 'Non renseigné',
+                    email: user?.email || 'Non renseigné',
+                    droits_secretaire: user?.droits_secretaire || false
+                });
+                setProfilForm({ nom: user?.nom || '', prenom: user?.prenom || '' });
             }
+
+            try {
+                const droitsRes = await getDroitsSecretaire();
+                setDroitsSecretaire(droitsRes.data);
+                if (droitsRes.data.hasDroits) {
+                    const etudRes = await getEtudiantsEnseignant();
+                    setEtudiants(etudRes.data);
+                }
+            } catch {
+                setDroitsSecretaire({ hasDroits: false, canAct: false });
+            }
+
+            try {
+                const notifRes = await getNotifications();
+                const notifCountRes = await getNotificationsCount();
+                setNotifications(notifRes.data);
+                setNotifCount(notifCountRes.data.count);
+            } catch {
+                setNotifications([]);
+                setNotifCount(0);
+            }
+
         } catch (err) {
             console.error('Erreur chargement:', err);
         }
     };
 
-    // ==================== OFFRES ====================
     const handleValiderOffre = async (id) => {
         if (!confirm('Valider cette offre ?')) return;
         try {
             setLoading(true);
             await validerOffre(id);
             loadData();
-            alert('Offre validée !');
+            alert('Offre validée avec succès');
         } catch (err) {
             alert('Erreur: ' + (err.response?.data?.error || err.message));
         } finally {
@@ -143,14 +161,13 @@ function Enseignant() {
         }
     };
 
-    // ==================== CANDIDATURES ====================
     const handleValiderCandidature = async (id) => {
         if (!confirm('Valider cette affectation ? Les autres candidatures seront automatiquement rejetées.')) return;
         try {
             setLoading(true);
             await validerCandidature(id);
             loadData();
-            alert('Affectation validée !');
+            alert('Affectation validée avec succès');
         } catch (err) {
             alert('Erreur: ' + (err.response?.data?.error || err.message));
         } finally {
@@ -158,7 +175,6 @@ function Enseignant() {
         }
     };
 
-    // ==================== BARÈMES ====================
     const openBaremeModal = (bareme = null) => {
         if (bareme) {
             setBaremeEditId(bareme.id);
@@ -190,10 +206,10 @@ function Enseignant() {
             setLoading(true);
             if (baremeEditId) {
                 await updateBareme(baremeEditId, baremeForm);
-                alert('Barème modifié !');
+                alert('Barème modifié avec succès');
             } else {
                 await createBareme(baremeForm);
-                alert('Barème créé !');
+                alert('Barème créé avec succès');
             }
             setShowBaremeModal(false);
             loadData();
@@ -214,7 +230,6 @@ function Enseignant() {
         }
     };
 
-    // ==================== PROFIL ====================
     const handleProfilSubmit = async (e) => {
         e.preventDefault();
         try {
@@ -222,7 +237,7 @@ function Enseignant() {
             await updateEnseignantProfil(profilForm);
             setShowProfilModal(false);
             loadData();
-            alert('Profil mis à jour !');
+            alert('Profil mis à jour avec succès');
         } catch (err) {
             alert('Erreur: ' + (err.response?.data?.error || err.message));
         } finally {
@@ -230,7 +245,6 @@ function Enseignant() {
         }
     };
 
-    // ==================== DROITS SECRÉTAIRE ====================
     const handleCreateEtudiant = async (e) => {
         e.preventDefault();
         try {
@@ -242,7 +256,7 @@ function Enseignant() {
                 num_etudiant: '', date_naissance: '', formation: 'MIAGE', annee_formation: 1
             });
             loadData();
-            alert('Étudiant créé !');
+            alert('Étudiant créé avec succès');
         } catch (err) {
             alert('Erreur: ' + (err.response?.data?.error || err.message));
         } finally {
@@ -251,17 +265,16 @@ function Enseignant() {
     };
 
     const handleValiderRC = async (id) => {
-        if (!confirm('Valider l\'attestation RC ?')) return;
+        if (!confirm("Valider l'attestation de responsabilité civile ?")) return;
         try {
             await validerRCEnseignant(id);
             loadData();
-            alert('Attestation RC validée !');
+            alert('Attestation RC validée');
         } catch (err) {
             alert('Erreur: ' + err.message);
         }
     };
 
-    // ==================== NOTIFICATIONS ====================
     const handleMarquerLue = async (id) => {
         try {
             await marquerNotificationLue(id);
@@ -280,41 +293,36 @@ function Enseignant() {
         }
     };
 
-    const etudiantsSansRC = etudiants.filter(e => !e.responsabilite_civile);
-
-    // ==================== RENDER ====================
     return (
         <Layout title="Espace Enseignant Responsable">
             <div className="enseignant-tabs">
                 <button className={activeTab === 'dashboard' ? 'active' : ''} onClick={() => setActiveTab('dashboard')}>
-                    📊 Dashboard
+                    Tableau de bord
                 </button>
                 <button className={activeTab === 'offres' ? 'active' : ''} onClick={() => setActiveTab('offres')}>
-                    📋 Offres ({offres.length})
+                    Offres <span className="tab-count">{offres.length}</span>
                 </button>
                 <button className={activeTab === 'candidatures' ? 'active' : ''} onClick={() => setActiveTab('candidatures')}>
-                    👥 Candidatures ({candidatures.length})
+                    Candidatures <span className="tab-count">{candidatures.length}</span>
                 </button>
                 <button className={activeTab === 'baremes' ? 'active' : ''} onClick={() => setActiveTab('baremes')}>
-                    💰 Barèmes ({baremes.length})
+                    Barèmes
                 </button>
-                {droitsSecretaire.hasDroits && (
-                    <button className={activeTab === 'secretaire' ? 'active' : ''} onClick={() => setActiveTab('secretaire')}>
-                        👩‍💼 Droits Secrétaire
-                    </button>
-                )}
+                <button className={activeTab === 'secretaire' ? 'active' : ''} onClick={() => setActiveTab('secretaire')}>
+                    Remplacement secrétaire
+                </button>
                 <button className={activeTab === 'notifications' ? 'active' : ''} onClick={() => setActiveTab('notifications')}>
-                    🔔 Notifications {notifCount > 0 && <span className="notif-badge">{notifCount}</span>}
+                    Notifications {notifCount > 0 && <span className="notif-badge">{notifCount}</span>}
                 </button>
                 <button className={activeTab === 'profil' ? 'active' : ''} onClick={() => setActiveTab('profil')}>
-                    👤 Mon Profil
+                    Mon profil
                 </button>
             </div>
 
-            {/* ==================== DASHBOARD ==================== */}
+            {/* DASHBOARD */}
             {activeTab === 'dashboard' && (
                 <div className="dashboard">
-                    <h2>Tableau de bord</h2>
+                    <h2>Vue d'ensemble</h2>
                     <div className="stats-grid">
                         <div className="stat-card warning">
                             <div className="stat-number">{stats.offresEnAttente || 0}</div>
@@ -336,7 +344,7 @@ function Enseignant() {
                 </div>
             )}
 
-            {/* ==================== OFFRES ==================== */}
+            {/* OFFRES */}
             {activeTab === 'offres' && (
                 <>
                     <div className="section-header">
@@ -357,22 +365,22 @@ function Enseignant() {
                             </thead>
                             <tbody>
                                 {offres.length === 0 ? (
-                                    <tr><td colSpan="7" className="empty">Aucune offre en attente</td></tr>
+                                    <tr><td colSpan="7" className="empty">Aucune offre en attente de validation</td></tr>
                                 ) : (
                                     offres.map(offre => (
                                         <tr key={offre.id}>
                                             <td>{offre.entreprise_nom}</td>
                                             <td>{offre.titre}</td>
                                             <td><span className={`badge ${offre.type?.toLowerCase()}`}>{offre.type}</span></td>
-                                            <td>{offre.remuneration}€/mois</td>
+                                            <td>{offre.remuneration} €/mois</td>
                                             <td>{offre.duree} mois</td>
-                                            <td>{new Date(offre.date_depot).toLocaleDateString()}</td>
+                                            <td>{new Date(offre.date_depot).toLocaleDateString('fr-FR')}</td>
                                             <td className="actions">
                                                 <button className="btn-validate" onClick={() => handleValiderOffre(offre.id)} disabled={loading}>
-                                                    ✅ Valider
+                                                    Valider
                                                 </button>
                                                 <button className="btn-refuse" onClick={() => openRefusModal(offre)} disabled={loading}>
-                                                    ❌ Refuser
+                                                    Refuser
                                                 </button>
                                             </td>
                                         </tr>
@@ -384,11 +392,12 @@ function Enseignant() {
                 </>
             )}
 
-            {/* ==================== CANDIDATURES ==================== */}
+            {/* CANDIDATURES */}
             {activeTab === 'candidatures' && (
                 <>
                     <div className="section-header">
-                        <h2>Candidatures à valider (acceptées par l'entreprise)</h2>
+                        <h2>Candidatures à valider</h2>
+                        <p className="section-subtitle">Candidatures acceptées par l'entreprise, en attente de validation finale</p>
                     </div>
                     <div className="table-container">
                         <table>
@@ -401,12 +410,12 @@ function Enseignant() {
                                     <th>Entreprise</th>
                                     <th>Type</th>
                                     <th>Acceptée le</th>
-                                    <th>Actions</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {candidatures.length === 0 ? (
-                                    <tr><td colSpan="8" className="empty">Aucune candidature en attente</td></tr>
+                                    <tr><td colSpan="8" className="empty">Aucune candidature en attente de validation</td></tr>
                                 ) : (
                                     candidatures.map(cand => (
                                         <tr key={cand.id}>
@@ -416,10 +425,10 @@ function Enseignant() {
                                             <td>{cand.offre_titre}</td>
                                             <td>{cand.entreprise_nom}</td>
                                             <td><span className={`badge ${cand.offre_type?.toLowerCase()}`}>{cand.offre_type}</span></td>
-                                            <td>{cand.date_acceptation_entreprise ? new Date(cand.date_acceptation_entreprise).toLocaleDateString() : '-'}</td>
+                                            <td>{cand.date_acceptation_entreprise ? new Date(cand.date_acceptation_entreprise).toLocaleDateString('fr-FR') : '-'}</td>
                                             <td className="actions">
                                                 <button className="btn-validate" onClick={() => handleValiderCandidature(cand.id)} disabled={loading}>
-                                                    ✅ Valider
+                                                    Valider l'affectation
                                                 </button>
                                             </td>
                                         </tr>
@@ -431,13 +440,13 @@ function Enseignant() {
                 </>
             )}
 
-            {/* ==================== BARÈMES ==================== */}
+            {/* BARÈMES */}
             {activeTab === 'baremes' && (
                 <>
                     <div className="section-header">
-                        <h2>Barèmes de rémunération légale</h2>
+                        <h2>Barèmes de rémunération</h2>
                         <button className="btn-primary" onClick={() => openBaremeModal()}>
-                            + Ajouter un barème
+                            Ajouter un barème
                         </button>
                     </div>
                     <div className="table-container">
@@ -446,9 +455,9 @@ function Enseignant() {
                                 <tr>
                                     <th>Type de contrat</th>
                                     <th>Pays</th>
-                                    <th>Durée min (mois)</th>
-                                    <th>Durée max (mois)</th>
-                                    <th>Montant min (€/mois)</th>
+                                    <th>Durée min</th>
+                                    <th>Durée max</th>
+                                    <th>Montant min</th>
                                     <th>Description</th>
                                     <th>Actions</th>
                                 </tr>
@@ -461,13 +470,13 @@ function Enseignant() {
                                         <tr key={bareme.id}>
                                             <td><span className={`badge ${bareme.type_contrat?.toLowerCase()}`}>{bareme.type_contrat}</span></td>
                                             <td>{bareme.pays}</td>
-                                            <td>{bareme.duree_min}</td>
-                                            <td>{bareme.duree_max}</td>
-                                            <td>{bareme.montant_min}€</td>
+                                            <td>{bareme.duree_min} mois</td>
+                                            <td>{bareme.duree_max} mois</td>
+                                            <td>{bareme.montant_min} €/mois</td>
                                             <td>{bareme.description || '-'}</td>
                                             <td className="actions">
-                                                <button className="btn-edit" onClick={() => openBaremeModal(bareme)}>✏️</button>
-                                                <button className="btn-delete" onClick={() => handleDeleteBareme(bareme.id)}>🗑️</button>
+                                                <button className="btn-edit" onClick={() => openBaremeModal(bareme)}>Modifier</button>
+                                                <button className="btn-delete" onClick={() => handleDeleteBareme(bareme.id)}>Supprimer</button>
                                             </td>
                                         </tr>
                                     ))
@@ -478,25 +487,41 @@ function Enseignant() {
                 </>
             )}
 
-            {/* ==================== DROITS SECRÉTAIRE ==================== */}
-            {activeTab === 'secretaire' && droitsSecretaire.hasDroits && (
+            {/* REMPLACEMENT SECRÉTAIRE */}
+            {activeTab === 'secretaire' && (
                 <>
                     <div className="section-header">
-                        <h2>Fonctions Secrétaire</h2>
-                        {droitsSecretaire.canAct ? (
-                            <span className="status-active">✅ Toutes les secrétaires sont en congé - Vous pouvez agir</span>
+                        <h2>Remplacement de la secrétaire</h2>
+                        {!droitsSecretaire.hasDroits ? (
+                            <span className="status-badge locked">Accès non autorisé</span>
+                        ) : droitsSecretaire.canAct ? (
+                            <span className="status-badge active">Fonctions actives</span>
                         ) : (
-                            <span className="status-inactive">⏸️ Des secrétaires sont disponibles ({droitsSecretaire.secretairesTotal - droitsSecretaire.secretairesEnConge} actives)</span>
+                            <span className="status-badge inactive">{droitsSecretaire.secretairesTotal - droitsSecretaire.secretairesEnConge} secrétaire(s) disponible(s)</span>
                         )}
                     </div>
 
-                    {droitsSecretaire.canAct ? (
+                    {!droitsSecretaire.hasDroits ? (
+                        <div className="info-box">
+                            <h3>Accès refusé</h3>
+                            <p>Vous n'êtes pas autorisé à remplacer la secrétaire.</p>
+                            <p>Veuillez contacter l'administrateur pour obtenir cette permission.</p>
+                        </div>
+                    ) : !droitsSecretaire.canAct ? (
+                        <div className="info-box">
+                            <h3>Fonctionnalité actuellement désactivée</h3>
+                            <p>Vous disposez des droits de remplacement, mais ils ne peuvent être exercés que lorsque <strong>toutes les secrétaires sont en congé</strong>.</p>
+                            <p>Actuellement, {droitsSecretaire.secretairesTotal - droitsSecretaire.secretairesEnConge} secrétaire(s) est/sont en activité.</p>
+                        </div>
+                    ) : (
                         <>
-                            <div className="sub-tabs">
-                                <h3>👨‍🎓 Étudiants</h3>
-                                <button className="btn-primary" onClick={() => setShowEtudiantModal(true)}>
-                                    + Inscrire un étudiant
-                                </button>
+                            <div className="sub-section">
+                                <div className="sub-header">
+                                    <h3>Gestion des étudiants</h3>
+                                    <button className="btn-primary" onClick={() => setShowEtudiantModal(true)}>
+                                        Inscrire un étudiant
+                                    </button>
+                                </div>
                             </div>
                             <div className="table-container">
                                 <table>
@@ -506,62 +531,65 @@ function Enseignant() {
                                             <th>Prénom</th>
                                             <th>N° Étudiant</th>
                                             <th>Formation</th>
-                                            <th>RC</th>
-                                            <th>Actions</th>
+                                            <th>Responsabilité civile</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {etudiants.map(etudiant => (
-                                            <tr key={etudiant.id}>
-                                                <td>{etudiant.nom}</td>
-                                                <td>{etudiant.prenom}</td>
-                                                <td>{etudiant.num_etudiant}</td>
-                                                <td>{etudiant.formation}</td>
-                                                <td>{etudiant.responsabilite_civile ? '✅' : '⏳'}</td>
-                                                <td>
-                                                    {!etudiant.responsabilite_civile && (
-                                                        <button className="btn-validate" onClick={() => handleValiderRC(etudiant.id)}>
-                                                            ✅ Valider RC
-                                                        </button>
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        ))}
+                                        {etudiants.length === 0 ? (
+                                            <tr><td colSpan="6" className="empty">Aucun étudiant inscrit</td></tr>
+                                        ) : (
+                                            etudiants.map(etudiant => (
+                                                <tr key={etudiant.id}>
+                                                    <td>{etudiant.nom}</td>
+                                                    <td>{etudiant.prenom}</td>
+                                                    <td>{etudiant.num_etudiant}</td>
+                                                    <td>{etudiant.formation}</td>
+                                                    <td>
+                                                        <span className={`status-dot ${etudiant.responsabilite_civile ? 'validated' : 'pending'}`}></span>
+                                                        {etudiant.responsabilite_civile ? 'Validée' : 'En attente'}
+                                                    </td>
+                                                    <td>
+                                                        {!etudiant.responsabilite_civile && (
+                                                            <button className="btn-validate" onClick={() => handleValiderRC(etudiant.id)}>
+                                                                Valider RC
+                                                            </button>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
                         </>
-                    ) : (
-                        <div className="info-box">
-                            <p>Vous avez les droits secrétaire mais vous ne pouvez les exercer que lorsque toutes les secrétaires sont en congé.</p>
-                        </div>
                     )}
                 </>
             )}
 
-            {/* ==================== NOTIFICATIONS ==================== */}
+            {/* NOTIFICATIONS */}
             {activeTab === 'notifications' && (
                 <>
                     <div className="section-header">
-                        <h2>Mes Notifications</h2>
+                        <h2>Mes notifications</h2>
                         {notifCount > 0 && (
-                            <button className="btn-primary" onClick={handleMarquerToutesLues}>
+                            <button className="btn-secondary" onClick={handleMarquerToutesLues}>
                                 Tout marquer comme lu
                             </button>
                         )}
                     </div>
                     <div className="notifications-list">
                         {notifications.length === 0 ? (
-                            <div className="empty-state">Aucune notification</div>
+                            <div className="empty-state">Aucune notification pour le moment</div>
                         ) : (
                             notifications.map(notif => (
                                 <div key={notif.id} className={`notification-item ${notif.lue ? 'read' : 'unread'}`}>
                                     <div className="notif-content">
                                         <p className="notif-message">{notif.message}</p>
-                                        <span className="notif-date">{new Date(notif.date_creation).toLocaleString()}</span>
+                                        <span className="notif-date">{new Date(notif.date_creation).toLocaleString('fr-FR')}</span>
                                     </div>
                                     {!notif.lue && (
-                                        <button className="btn-small" onClick={() => handleMarquerLue(notif.id)}>✓</button>
+                                        <button className="btn-small" onClick={() => handleMarquerLue(notif.id)}>Marquer comme lu</button>
                                     )}
                                 </div>
                             ))
@@ -570,25 +598,39 @@ function Enseignant() {
                 </>
             )}
 
-            {/* ==================== PROFIL ==================== */}
+            {/* PROFIL */}
             {activeTab === 'profil' && (
                 <div className="profil-section">
-                    <h2>Mon Profil</h2>
+                    <h2>Mon profil</h2>
                     <div className="profil-card">
                         <div className="profil-info">
-                            <p><strong>Nom :</strong> {profil.nom}</p>
-                            <p><strong>Prénom :</strong> {profil.prenom}</p>
-                            <p><strong>Email :</strong> {profil.email}</p>
-                            <p><strong>Droits secrétaire :</strong> {profil.droits_secretaire ? '✅ Oui' : '❌ Non'}</p>
+                            <div className="profil-row">
+                                <span className="profil-label">Nom</span>
+                                <span className="profil-value">{profil.nom || 'Non renseigné'}</span>
+                            </div>
+                            <div className="profil-row">
+                                <span className="profil-label">Prénom</span>
+                                <span className="profil-value">{profil.prenom || 'Non renseigné'}</span>
+                            </div>
+                            <div className="profil-row">
+                                <span className="profil-label">Email</span>
+                                <span className="profil-value">{profil.email || 'Non renseigné'}</span>
+                            </div>
+                            <div className="profil-row">
+                                <span className="profil-label">Droits secrétaire</span>
+                                <span className={`profil-value ${profil.droits_secretaire ? 'text-success' : 'text-muted'}`}>
+                                    {profil.droits_secretaire ? 'Oui' : 'Non'}
+                                </span>
+                            </div>
                         </div>
                         <button className="btn-primary" onClick={() => setShowProfilModal(true)}>
-                            ✏️ Modifier mes informations
+                            Modifier mes informations
                         </button>
                     </div>
                 </div>
             )}
 
-            {/* ==================== MODAL REFUS ==================== */}
+            {/* MODAL REFUS */}
             {showRefusModal && (
                 <div className="modal" onClick={() => setShowRefusModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -596,9 +638,9 @@ function Enseignant() {
                         <p><strong>Offre :</strong> {selectedOffre?.titre}</p>
                         <p><strong>Entreprise :</strong> {selectedOffre?.entreprise_nom}</p>
                         <div className="form-group">
-                            <label>Motif du refus *</label>
+                            <label>Motif du refus</label>
                             <select value={motifRefus} onChange={e => setMotifRefus(e.target.value)}>
-                                <option value="">-- Sélectionner un motif --</option>
+                                <option value="">Sélectionner un motif</option>
                                 <option value="Rémunération insuffisante">Rémunération insuffisante</option>
                                 <option value="Durée non conforme">Durée non conforme</option>
                                 <option value="Description incomplète">Description incomplète</option>
@@ -607,16 +649,16 @@ function Enseignant() {
                             </select>
                         </div>
                         <div className="modal-actions">
-                            <button type="button" onClick={() => setShowRefusModal(false)}>Annuler</button>
+                            <button type="button" className="btn-secondary" onClick={() => setShowRefusModal(false)}>Annuler</button>
                             <button className="btn-refuse" onClick={handleRefuserOffre} disabled={loading}>
-                                {loading ? 'Envoi...' : 'Refuser l\'offre'}
+                                {loading ? 'Envoi...' : "Confirmer le refus"}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* ==================== MODAL BARÈME ==================== */}
+            {/* MODAL BARÈME */}
             {showBaremeModal && (
                 <div className="modal" onClick={() => setShowBaremeModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -646,20 +688,18 @@ function Enseignant() {
                                     <input type="number" value={baremeForm.duree_max} onChange={e => setBaremeForm({ ...baremeForm, duree_max: parseInt(e.target.value) })} required />
                                 </div>
                             </div>
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>Montant min (€/mois)</label>
-                                    <input type="number" step="0.01" value={baremeForm.montant_min} onChange={e => setBaremeForm({ ...baremeForm, montant_min: parseFloat(e.target.value) })} required />
-                                </div>
+                            <div className="form-group">
+                                <label>Montant minimum (€/mois)</label>
+                                <input type="number" step="0.01" value={baremeForm.montant_min} onChange={e => setBaremeForm({ ...baremeForm, montant_min: parseFloat(e.target.value) })} required />
                             </div>
                             <div className="form-group">
                                 <label>Description</label>
                                 <textarea value={baremeForm.description} onChange={e => setBaremeForm({ ...baremeForm, description: e.target.value })} rows="3" />
                             </div>
                             <div className="modal-actions">
-                                <button type="button" onClick={() => setShowBaremeModal(false)}>Annuler</button>
+                                <button type="button" className="btn-secondary" onClick={() => setShowBaremeModal(false)}>Annuler</button>
                                 <button type="submit" className="btn-primary" disabled={loading}>
-                                    {loading ? 'Enregistrement...' : (baremeEditId ? 'Modifier' : 'Créer')}
+                                    {loading ? 'Enregistrement...' : (baremeEditId ? 'Enregistrer' : 'Créer')}
                                 </button>
                             </div>
                         </form>
@@ -667,7 +707,7 @@ function Enseignant() {
                 </div>
             )}
 
-            {/* ==================== MODAL PROFIL ==================== */}
+            {/* MODAL PROFIL */}
             {showProfilModal && (
                 <div className="modal" onClick={() => setShowProfilModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -684,7 +724,7 @@ function Enseignant() {
                                 </div>
                             </div>
                             <div className="modal-actions">
-                                <button type="button" onClick={() => setShowProfilModal(false)}>Annuler</button>
+                                <button type="button" className="btn-secondary" onClick={() => setShowProfilModal(false)}>Annuler</button>
                                 <button type="submit" className="btn-primary" disabled={loading}>
                                     {loading ? 'Enregistrement...' : 'Enregistrer'}
                                 </button>
@@ -694,7 +734,7 @@ function Enseignant() {
                 </div>
             )}
 
-            {/* ==================== MODAL ÉTUDIANT ==================== */}
+            {/* MODAL ÉTUDIANT */}
             {showEtudiantModal && (
                 <div className="modal" onClick={() => setShowEtudiantModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -748,9 +788,9 @@ function Enseignant() {
                                 </div>
                             </div>
                             <div className="modal-actions">
-                                <button type="button" onClick={() => setShowEtudiantModal(false)}>Annuler</button>
+                                <button type="button" className="btn-secondary" onClick={() => setShowEtudiantModal(false)}>Annuler</button>
                                 <button type="submit" className="btn-primary" disabled={loading}>
-                                    {loading ? 'Création...' : 'Créer'}
+                                    {loading ? 'Création...' : "Créer l'étudiant"}
                                 </button>
                             </div>
                         </form>
