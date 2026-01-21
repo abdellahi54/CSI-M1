@@ -138,4 +138,296 @@ router.delete('/enseignants/:id', authMiddleware, withRole, async (req, res) => 
     }
 });
 
+// ==========================================
+// GESTION ETUDIANTS
+// ==========================================
+
+// GET - Liste des etudiants
+router.get('/etudiants', authMiddleware, withRole, async (req, res) => {
+    try {
+        const result = await req.dbClient.query(`
+            SELECT e.*, u.email, u.date_creation
+            FROM etudiant e
+            JOIN utilisateur u ON e.id = u.id
+            ORDER BY e.nom, e.prenom
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
+// POST - Creer un etudiant
+router.post('/etudiants', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { email, mot_de_passe, nom, prenom, num_etudiant, date_naissance, formation, annee_formation } = req.body;
+
+        await req.dbClient.query('BEGIN');
+        const hashedPassword = await bcrypt.hash(mot_de_passe, 10);
+
+        const userResult = await req.dbClient.query(`
+            INSERT INTO utilisateur (email, mot_de_passe, role)
+            VALUES ($1, $2, 'ETUDIANT')
+            RETURNING id
+        `, [email, hashedPassword]);
+        const userId = userResult.rows[0].id;
+
+        await req.dbClient.query(`
+            INSERT INTO etudiant (id, num_etudiant, nom, prenom, date_naissance, formation, annee_formation, statut)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, 'EN_RECHERCHE')
+        `, [userId, num_etudiant, nom, prenom, date_naissance, formation, annee_formation]);
+
+        await req.dbClient.query('COMMIT');
+        res.status(201).json({ message: 'Etudiant cree', id: userId });
+    } catch (err) {
+        await req.dbClient.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ error: 'Erreur creation', details: err.message });
+    }
+});
+
+// PUT - Modifier un etudiant
+router.put('/etudiants/:id', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nom, prenom, formation, annee_formation } = req.body;
+        await req.dbClient.query(`
+            UPDATE etudiant SET nom = $1, prenom = $2, formation = $3, annee_formation = $4
+            WHERE id = $5
+        `, [nom, prenom, formation, annee_formation, id]);
+        res.json({ message: 'Etudiant mis a jour' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur mise a jour' });
+    }
+});
+
+// DELETE - Supprimer un etudiant
+router.delete('/etudiants/:id', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await req.dbClient.query('DELETE FROM utilisateur WHERE id = $1', [id]);
+        res.json({ message: 'Etudiant supprime' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur suppression' });
+    }
+});
+
+// ==========================================
+// GESTION ENTREPRISES
+// ==========================================
+
+// GET - Liste des entreprises
+router.get('/entreprises', authMiddleware, withRole, async (req, res) => {
+    try {
+        const result = await req.dbClient.query(`
+            SELECT e.*, u.email, u.date_creation
+            FROM entreprise e
+            JOIN utilisateur u ON e.id = u.id
+            ORDER BY e.raison_sociale
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
+// PUT - Activer/Desactiver entreprise
+router.put('/entreprises/:id/toggle-active', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await req.dbClient.query(`
+            UPDATE entreprise SET active = NOT active WHERE id = $1
+        `, [id]);
+        res.json({ message: 'Statut entreprise mis a jour' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
+// DELETE - Supprimer entreprise
+router.delete('/entreprises/:id', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await req.dbClient.query('DELETE FROM utilisateur WHERE id = $1', [id]);
+        res.json({ message: 'Entreprise supprimee' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur suppression' });
+    }
+});
+
+// ==========================================
+// GESTION OFFRES
+// ==========================================
+
+// GET - Liste des offres
+router.get('/offres', authMiddleware, withRole, async (req, res) => {
+    try {
+        const result = await req.dbClient.query(`
+            SELECT o.*, 
+                   e.raison_sociale as entreprise,
+                   ens.nom as validateur_nom, ens.prenom as validateur_prenom
+            FROM offre o
+            JOIN entreprise e ON o.entreprise_id = e.id
+            LEFT JOIN enseignant_responsable ens ON o.enseignant_validateur_id = ens.id
+            ORDER BY o.id DESC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
+// PUT - Valider une offre
+router.put('/offres/:id/valider', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await req.dbClient.query(`
+            UPDATE offre SET etat = 'VALDEE' WHERE id = $1
+        `, [id]);
+        res.json({ message: 'Offre validee' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur validation' });
+    }
+});
+
+// PUT - Refuser une offre
+router.put('/offres/:id/refuser', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await req.dbClient.query(`
+            UPDATE offre SET etat = 'NON VALDEE' WHERE id = $1
+        `, [id]);
+        res.json({ message: 'Offre refusee' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur refus' });
+    }
+});
+
+// ==========================================
+// GESTION CANDIDATURES
+// ==========================================
+
+// GET - Liste des candidatures
+router.get('/candidatures', authMiddleware, withRole, async (req, res) => {
+    try {
+        const result = await req.dbClient.query(`
+            SELECT c.*, 
+                   et.nom as etudiant_nom, et.prenom as etudiant_prenom,
+                   ent.raison_sociale as entreprise,
+                   o.type as offre_type
+            FROM candidature c
+            JOIN etudiant et ON c.etudiant_id = et.id
+            JOIN offre o ON c.offre_id = o.id
+            JOIN entreprise ent ON o.entreprise_id = ent.id
+            ORDER BY c.date_candidature DESC
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
+// ==========================================
+// GESTION BAREMES
+// ==========================================
+
+// GET - Liste des baremes
+router.get('/baremes', authMiddleware, withRole, async (req, res) => {
+    try {
+        const result = await req.dbClient.query(`
+            SELECT * FROM bareme_remuneration ORDER BY type_offre
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
+// POST - Creer un bareme
+router.post('/baremes', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { type_offre, pays, duree_min, duree_max, montant_minimal } = req.body;
+        await req.dbClient.query(`
+            INSERT INTO bareme_remuneration (type_offre, pays, duree_min, duree_max, montant_minimal)
+            VALUES ($1, $2, $3, $4, $5)
+        `, [type_offre, pays, duree_min, duree_max, montant_minimal]);
+        res.status(201).json({ message: 'Bareme cree' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur creation' });
+    }
+});
+
+// PUT - Modifier un bareme
+router.put('/baremes/:id', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { type_offre, pays, duree_min, duree_max, montant_minimal } = req.body;
+        await req.dbClient.query(`
+            UPDATE bareme_remuneration
+            SET type_offre = $1, pays = $2, duree_min = $3, duree_max = $4, montant_minimal = $5
+            WHERE id = $6
+        `, [type_offre, pays, duree_min, duree_max, montant_minimal, id]);
+        res.json({ message: 'Bareme mis a jour' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur mise a jour' });
+    }
+});
+
+// DELETE - Supprimer un bareme
+router.delete('/baremes/:id', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        await req.dbClient.query('DELETE FROM bareme_remuneration WHERE id = $1', [id]);
+        res.json({ message: 'Bareme supprime' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur suppression' });
+    }
+});
+
+// ==========================================
+// MODIFICATIONS UTILISATEURS
+// ==========================================
+
+router.put('/secretaires/:id', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nom, prenom, en_conge } = req.body;
+        await req.dbClient.query(`
+            UPDATE secretaire SET nom = $1, prenom = $2, en_conge = $3 WHERE id = $4
+        `, [nom, prenom, en_conge, id]);
+        res.json({ message: 'Secretaire mise a jour' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur mise a jour' });
+    }
+});
+
+router.put('/enseignants/:id', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nom, prenom, droits_secretaire } = req.body;
+        await req.dbClient.query(`
+            UPDATE enseignant_responsable SET nom = $1, prenom = $2, droits_secretaire = $3 WHERE id = $4
+        `, [nom, prenom, droits_secretaire, id]);
+        res.json({ message: 'Enseignant mis a jour' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur mise a jour' });
+    }
+});
+
 module.exports = router;
