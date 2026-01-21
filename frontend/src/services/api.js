@@ -42,12 +42,40 @@ export const getMyProfilSecretaire = () => api.get('/secretaire/profil');
 export const updateMyProfilSecretaire = (data) => api.put('/secretaire/profil', data);
 
 // Admin
+// Admin - Users
 export const getSecretaires = () => api.get('/admin/secretaires');
 export const getEnseignants = () => api.get('/admin/enseignants');
 export const createSecretaire = (data) => api.post('/admin/secretaires', data);
 export const createEnseignant = (data) => api.post('/admin/enseignants', data);
+export const updateSecretaire = (id, data) => api.put(`/admin/secretaires/${id}`, data);
+export const updateEnseignant = (id, data) => api.put(`/admin/enseignants/${id}`, data);
 export const deleteSecretaire = (id) => api.delete(`/admin/secretaires/${id}`);
 export const deleteEnseignant = (id) => api.delete(`/admin/enseignants/${id}`);
+
+// Admin - Etudiants
+export const adminGetEtudiants = () => api.get('/admin/etudiants');
+export const adminCreateEtudiant = (data) => api.post('/admin/etudiants', data);
+export const adminUpdateEtudiant = (id, data) => api.put(`/admin/etudiants/${id}`, data);
+export const adminDeleteEtudiant = (id) => api.delete(`/admin/etudiants/${id}`);
+
+// Admin - Entreprises
+export const adminGetEntreprises = () => api.get('/admin/entreprises');
+export const adminToggleEntreprise = (id) => api.put(`/admin/entreprises/${id}/toggle-active`);
+export const adminDeleteEntreprise = (id) => api.delete(`/admin/entreprises/${id}`);
+
+// Admin - Offres
+export const adminGetOffres = () => api.get('/admin/offres');
+export const adminValidateOffre = (id) => api.put(`/admin/offres/${id}/valider`);
+export const adminRefuseOffre = (id) => api.put(`/admin/offres/${id}/refuser`);
+
+// Admin - Candidatures
+export const adminGetCandidatures = () => api.get('/admin/candidatures');
+
+// Admin - Baremes
+export const adminGetBaremes = () => api.get('/admin/baremes');
+export const adminCreateBareme = (data) => api.post('/admin/baremes', data);
+export const adminUpdateBareme = (id, data) => api.put(`/admin/baremes/${id}`, data);
+export const adminDeleteBareme = (id) => api.delete(`/admin/baremes/${id}`);
 
 // Offres
 export const getOffres = () => api.get('/offres');
