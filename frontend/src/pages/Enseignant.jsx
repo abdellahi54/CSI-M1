@@ -66,6 +66,10 @@ function Enseignant() {
         num_etudiant: '', date_naissance: '', formation: 'MIAGE', annee_formation: 1
     });
 
+    // Details Modals State (Candidatures tab)
+    const [showStudentDetails, setShowStudentDetails] = useState(null);
+    const [showOfferDetails, setShowOfferDetails] = useState(null);
+
     useEffect(() => {
         loadData();
     }, []);
@@ -436,10 +440,24 @@ function Enseignant() {
                                 ) : (
                                     candidatures.map(cand => (
                                         <tr key={cand.id}>
-                                            <td>{cand.etudiant_prenom} {cand.etudiant_nom}</td>
+                                            <td>
+                                                <button
+                                                    style={{ background: 'none', border: 'none', color: '#4299e1', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}
+                                                    onClick={() => setShowStudentDetails(cand)}
+                                                >
+                                                    {cand.etudiant_prenom} {cand.etudiant_nom}
+                                                </button>
+                                            </td>
                                             <td>{cand.num_etudiant}</td>
                                             <td>{cand.formation}</td>
-                                            <td>{cand.offre_titre}</td>
+                                            <td>
+                                                <button
+                                                    style={{ background: 'none', border: 'none', color: '#4299e1', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}
+                                                    onClick={() => setShowOfferDetails(cand)}
+                                                >
+                                                    {cand.offre_description ? cand.offre_description.substring(0, 30) + '...' : 'Voir détails'}
+                                                </button>
+                                            </td>
                                             <td>{cand.entreprise_nom}</td>
                                             <td><span className={`badge ${cand.offre_type?.toLowerCase()}`}>{cand.offre_type}</span></td>
                                             <td>{cand.date_acceptation_entreprise ? new Date(cand.date_acceptation_entreprise).toLocaleDateString('fr-FR') : '-'}</td>
@@ -811,6 +829,49 @@ function Enseignant() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Détails Étudiant */}
+            {showStudentDetails && (
+                <div className="modal" onClick={() => setShowStudentDetails(null)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <h2>Détails Étudiant</h2>
+                        <div className="details-grid">
+                            <p><strong>Nom:</strong> {showStudentDetails.etudiant_nom}</p>
+                            <p><strong>Prénom:</strong> {showStudentDetails.etudiant_prenom}</p>
+                            <p><strong>N° Étudiant:</strong> {showStudentDetails.num_etudiant}</p>
+                            <p><strong>Formation:</strong> {showStudentDetails.formation}</p>
+                            <p><strong>Email:</strong> {showStudentDetails.etudiant_email}</p>
+                        </div>
+                        <div className="modal-actions">
+                            <button className="btn-secondary" onClick={() => setShowStudentDetails(null)}>Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Détails Offre */}
+            {showOfferDetails && (
+                <div className="modal" onClick={() => setShowOfferDetails(null)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <h2>Détails Offre</h2>
+                        <div className="details-grid">
+                            <p><strong>Entreprise:</strong> {showOfferDetails.entreprise_nom}</p>
+                            <p><strong>Type:</strong> {showOfferDetails.offre_type}</p>
+                            <p><strong>Lieu:</strong> {showOfferDetails.ville}, {showOfferDetails.pays}</p>
+                            <p><strong>Rémunération:</strong> {showOfferDetails.remuneration} €/mois</p>
+                            <p><strong>Durée:</strong> {showOfferDetails.duree} semaines</p>
+                            <p><strong>Date début:</strong> {new Date(showOfferDetails.date_debut).toLocaleDateString()}</p>
+                            <div className="description-box" style={{ marginTop: '1rem', padding: '1rem', background: '#f5f5f5', borderRadius: '4px', color: '#333' }}>
+                                <strong>Description:</strong>
+                                <p style={{ whiteSpace: 'pre-wrap', marginTop: '0.5rem' }}>{showOfferDetails.offre_description}</p>
+                            </div>
+                        </div>
+                        <div className="modal-actions">
+                            <button className="btn-secondary" onClick={() => setShowOfferDetails(null)}>Fermer</button>
+                        </div>
                     </div>
                 </div>
             )}

@@ -89,14 +89,16 @@ router.get('/candidatures', authMiddleware, withRole, async (req, res) => {
         const result = await req.dbClient.query(`
             SELECT c.*, 
                    o.description as offre_description, o.type as offre_type,
-                   o.date_debut, o.duree, o.remuneration,
+                   o.date_debut, o.duree, o.remuneration, o.ville, o.pays,
                    ent.raison_sociale as entreprise_nom,
                    et.nom as etudiant_nom, et.prenom as etudiant_prenom,
-                   et.num_etudiant, et.formation
+                   et.num_etudiant, et.formation,
+                   u.email as etudiant_email
             FROM candidature c
             JOIN offre o ON c.offre_id = o.id
             JOIN entreprise ent ON o.entreprise_id = ent.id
             JOIN etudiant et ON c.etudiant_id = et.id
+            JOIN utilisateur u ON et.id = u.id
             WHERE c.statut = 'ACCEPTEE ENTREPRISE'
             ORDER BY c.date_candidature DESC
         `);
