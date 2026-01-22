@@ -38,6 +38,8 @@ router.get('/enseignants', authMiddleware, withRole, async (req, res) => {
 
 // POST - Créer une secrétaire
 router.post('/secretaires', authMiddleware, withRole, async (req, res) => {
+    console.log('=== CREATION SECRETAIRE ===');
+    console.log('Body:', req.body);
     try {
         const { email, mot_de_passe, nom, prenom } = req.body;
 
@@ -427,6 +429,51 @@ router.put('/enseignants/:id', authMiddleware, withRole, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erreur mise a jour' });
+    }
+});
+
+// POST - Archivage de fin d'année
+router.post('/archiver', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { annee } = req.body;
+
+        if (!annee) {
+            return res.status(400).json({ error: 'Année universitaire requise' });
+        }
+
+        // Appeler la procédure d'archivage
+        await req.dbClient.query('SELECT archiver_annee_universitaire($1)', [annee]);
+
+        res.json({ message: `Archivage de l'année ${annee} terminé avec succès` });
+    } catch (err) {
+        console.error('Erreur archivage:', err);
+        res.status(500).json({ error: 'Erreur lors de l\'archivage', details: err.message });
+    }
+});
+
+// POST - Supprimer tous les étudiants
+router.post('/supprimer-etudiants', authMiddleware, withRole, async (req, res) => {
+    try {
+        await req.dbClient.query('SELECT delete_tous_les_etudiants()');
+        res.json({ message: 'Tous les étudiants ont été supprimés' });
+    } catch (err) {
+        console.error('Erreur suppression étudiants:', err);
+        res.status(500).json({ error: 'Erreur lors de la suppression', details: err.message });
+    }
+});
+
+// POST - Archivage de fin d'année
+router.post('/archiver', authMiddleware, withRole, async (req, res) => {
+    console.log('=== ARCHIVAGE ===');
+    try {
+        // Appeler les procédures d'archivage
+        await req.dbClient.query('SELECT archive_offre_annuelles()');
+        await req.dbClient.query('SELECT archives_entreprises_inactives()');
+
+        res.json({ message: 'Archivage terminé avec succès' });
+    } catch (err) {
+        console.error('Erreur archivage:', err);
+        res.status(500).json({ error: 'Erreur lors de l\'archivage', details: err.message });
     }
 });
 

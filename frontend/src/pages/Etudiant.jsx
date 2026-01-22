@@ -216,7 +216,7 @@ function Etudiant() {
                                         <td>{new Date(c.date_candidature).toLocaleDateString()}</td>
                                         <td className={status.class}>{status.text}</td>
                                         <td>
-                                            {c.statut === 'SOUMISE' && (
+                                            {(c.statut === 'SOUMISE' || c.statut === 'ACCEPTEE ENTREPRISE') && (
                                                 <button className="btn-cancel" onClick={() => handleCancel(c.id)}>
                                                     Annuler
                                                 </button>

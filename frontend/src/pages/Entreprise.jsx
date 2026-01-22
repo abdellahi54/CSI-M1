@@ -214,7 +214,8 @@ function EntrepriseDashboard() {
             });
         } catch (err) {
             console.error('Erreur création offre:', err);
-            alert(err.response?.data?.error || 'Erreur lors de la création');
+            const errorMsg = err.response?.data?.details || err.response?.data?.error || 'Erreur lors de la création';
+            alert(errorMsg);
         }
     };
 

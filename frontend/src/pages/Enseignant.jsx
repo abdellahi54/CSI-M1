@@ -7,6 +7,7 @@ import {
     refuserOffre,
     getCandidaturesAValider,
     validerCandidature,
+    refuserCandidatureEnseignant,
     getBaremes,
     createBareme,
     updateBareme,
@@ -69,6 +70,10 @@ function Enseignant() {
     // Details Modals State (Candidatures tab)
     const [showStudentDetails, setShowStudentDetails] = useState(null);
     const [showOfferDetails, setShowOfferDetails] = useState(null);
+
+    // Modal refus candidature
+    const [showRefusCandModal, setShowRefusCandModal] = useState(null);
+    const [refusCandMotif, setRefusCandMotif] = useState('');
 
     useEffect(() => {
         loadData();
@@ -177,6 +182,29 @@ function Enseignant() {
             await validerCandidature(id);
             loadData();
             alert('Affectation validée avec succès');
+        } catch (err) {
+            alert('Erreur: ' + (err.response?.data?.error || err.message));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const openRefusCandidatureModal = (candidatureId) => {
+        setShowRefusCandModal(candidatureId);
+        setRefusCandMotif('');
+    };
+
+    const handleConfirmRefusCandidature = async () => {
+        if (!refusCandMotif) {
+            alert('Veuillez sélectionner un motif');
+            return;
+        }
+        try {
+            setLoading(true);
+            await refuserCandidatureEnseignant(showRefusCandModal, refusCandMotif);
+            setShowRefusCandModal(null);
+            loadData();
+            alert('Candidature refusée');
         } catch (err) {
             alert('Erreur: ' + (err.response?.data?.error || err.message));
         } finally {
@@ -320,9 +348,6 @@ function Enseignant() {
                 <button className={activeTab === 'secretaire' ? 'active' : ''} onClick={() => setActiveTab('secretaire')}>
                     Remplacement secrétaire
                 </button>
-                <button className={activeTab === 'notifications' ? 'active' : ''} onClick={() => setActiveTab('notifications')}>
-                    Notifications {notifCount > 0 && <span className="notif-badge">{notifCount}</span>}
-                </button>
                 <button className={activeTab === 'profil' ? 'active' : ''} onClick={() => setActiveTab('profil')}>
                     Mon profil
                 </button>
@@ -427,16 +452,18 @@ function Enseignant() {
                                     <th>Étudiant</th>
                                     <th>N° Étudiant</th>
                                     <th>Formation</th>
+                                    <th>Âge</th>
                                     <th>Offre</th>
                                     <th>Entreprise</th>
                                     <th>Type</th>
+                                    <th>Rémun.</th>
                                     <th>Acceptée le</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {candidatures.length === 0 ? (
-                                    <tr><td colSpan="8" className="empty">Aucune candidature en attente de validation</td></tr>
+                                    <tr><td colSpan="10" className="empty">Aucune candidature en attente de validation</td></tr>
                                 ) : (
                                     candidatures.map(cand => (
                                         <tr key={cand.id}>
@@ -450,6 +477,7 @@ function Enseignant() {
                                             </td>
                                             <td>{cand.num_etudiant}</td>
                                             <td>{cand.formation}</td>
+                                            <td><strong>{cand.age_etudiant} ans</strong></td>
                                             <td>
                                                 <button
                                                     style={{ background: 'none', border: 'none', color: '#4299e1', textDecoration: 'underline', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}
@@ -460,10 +488,14 @@ function Enseignant() {
                                             </td>
                                             <td>{cand.entreprise_nom}</td>
                                             <td><span className={`badge ${cand.offre_type?.toLowerCase()}`}>{cand.offre_type}</span></td>
+                                            <td><strong>{cand.remuneration}€</strong></td>
                                             <td>{cand.date_acceptation_entreprise ? new Date(cand.date_acceptation_entreprise).toLocaleDateString('fr-FR') : '-'}</td>
                                             <td className="actions">
                                                 <button className="btn-validate" onClick={() => handleValiderCandidature(cand.id)} disabled={loading}>
-                                                    Valider l'affectation
+                                                    Valider
+                                                </button>
+                                                <button className="btn-danger" onClick={() => openRefusCandidatureModal(cand.id)} disabled={loading} style={{ marginLeft: '5px' }}>
+                                                    Refuser
                                                 </button>
                                             </td>
                                         </tr>
@@ -488,18 +520,20 @@ function Enseignant() {
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Type de contrat</th>
+                                    <th>Type</th>
                                     <th>Pays</th>
                                     <th>Durée min</th>
                                     <th>Durée max</th>
+                                    <th>Âge min</th>
+                                    <th>Âge max</th>
+                                    <th>Année</th>
                                     <th>Montant min</th>
-                                    <th>Description</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {baremes.length === 0 ? (
-                                    <tr><td colSpan="7" className="empty">Aucun barème défini</td></tr>
+                                    <tr><td colSpan="9" className="empty">Aucun barème défini</td></tr>
                                 ) : (
                                     baremes.map(bareme => (
                                         <tr key={bareme.id}>
@@ -507,8 +541,10 @@ function Enseignant() {
                                             <td>{bareme.pays}</td>
                                             <td>{bareme.duree_min} mois</td>
                                             <td>{bareme.duree_max} mois</td>
+                                            <td>{bareme.age_min || '-'}</td>
+                                            <td>{bareme.age_max || '-'}</td>
+                                            <td>{bareme.annee_contrat === 1 ? '1ère' : bareme.annee_contrat ? `${bareme.annee_contrat}ème` : '-'}</td>
                                             <td>{bareme.montant_min} €/mois</td>
-                                            <td>{bareme.description || '-'}</td>
                                             <td className="actions">
                                                 <button className="btn-edit" onClick={() => openBaremeModal(bareme)}>Modifier</button>
                                                 <button className="btn-delete" onClick={() => handleDeleteBareme(bareme.id)}>Supprimer</button>
@@ -727,10 +763,29 @@ function Enseignant() {
                                 <label>Montant minimum (€/mois)</label>
                                 <input type="number" step="0.01" value={baremeForm.montant_min} onChange={e => setBaremeForm({ ...baremeForm, montant_min: parseFloat(e.target.value) })} required />
                             </div>
-                            <div className="form-group">
-                                <label>Description</label>
-                                <textarea value={baremeForm.description} onChange={e => setBaremeForm({ ...baremeForm, description: e.target.value })} rows="3" />
-                            </div>
+                            {/* Champs spécifiques alternance */}
+                            {baremeForm.type_contrat === 'ALTERNANCE' && (
+                                <>
+                                    <div className="form-row">
+                                        <div className="form-group">
+                                            <label>Âge minimum</label>
+                                            <input type="number" value={baremeForm.age_min || 0} onChange={e => setBaremeForm({ ...baremeForm, age_min: parseInt(e.target.value) })} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Âge maximum</label>
+                                            <input type="number" value={baremeForm.age_max || 0} onChange={e => setBaremeForm({ ...baremeForm, age_max: parseInt(e.target.value) })} />
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Année de contrat</label>
+                                        <select value={baremeForm.annee_contrat || 1} onChange={e => setBaremeForm({ ...baremeForm, annee_contrat: parseInt(e.target.value) })}>
+                                            <option value={1}>1ère année</option>
+                                            <option value={2}>2ème année</option>
+                                            <option value={3}>3ème année</option>
+                                        </select>
+                                    </div>
+                                </>
+                            )}
                             <div className="modal-actions">
                                 <button type="button" className="btn-secondary" onClick={() => setShowBaremeModal(false)}>Annuler</button>
                                 <button type="submit" className="btn-primary" disabled={loading}>
@@ -871,6 +926,35 @@ function Enseignant() {
                         </div>
                         <div className="modal-actions">
                             <button className="btn-secondary" onClick={() => setShowOfferDetails(null)}>Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODALE REFUS CANDIDATURE */}
+            {showRefusCandModal && (
+                <div className="modal-overlay">
+                    <div className="modal">
+                        <h2>Refuser la candidature</h2>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <label>Motif du refus</label>
+                                <select
+                                    value={refusCandMotif}
+                                    onChange={(e) => setRefusCandMotif(e.target.value)}
+                                    style={{ width: '100%', padding: '10px', fontSize: '16px' }}
+                                >
+                                    <option value="">-- Sélectionner un motif --</option>
+                                    <option value="informations manquantes">Informations manquantes</option>
+                                    <option value="rémunération non conforme">Rémunération non conforme</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="modal-actions">
+                            <button className="btn-secondary" onClick={() => setShowRefusCandModal(null)}>Annuler</button>
+                            <button className="btn-danger" onClick={handleConfirmRefusCandidature} disabled={loading || !refusCandMotif}>
+                                {loading ? 'Refus...' : 'Confirmer le refus'}
+                            </button>
                         </div>
                     </div>
                 </div>

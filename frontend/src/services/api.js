@@ -115,6 +115,7 @@ export const refuserOffre = (id, motif) => api.put(`/enseignant/offres/${id}/ref
 // Enseignant - Candidatures
 export const getCandidaturesAValider = () => api.get('/enseignant/candidatures');
 export const validerCandidature = (id) => api.put(`/enseignant/candidatures/${id}/valider`);
+export const refuserCandidatureEnseignant = (id, motif) => api.put(`/enseignant/candidatures/${id}/refuser`, { motif });
 
 // Enseignant - Barèmes
 export const getBaremes = () => api.get('/enseignant/baremes');

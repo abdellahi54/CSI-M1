@@ -92,7 +92,8 @@ router.get('/candidatures', authMiddleware, withRole, async (req, res) => {
                    o.date_debut, o.duree, o.remuneration, o.ville, o.pays,
                    ent.raison_sociale as entreprise_nom,
                    et.nom as etudiant_nom, et.prenom as etudiant_prenom,
-                   et.num_etudiant, et.formation,
+                   et.num_etudiant, et.formation, et.date_naissance,
+                   EXTRACT(YEAR FROM AGE(CURRENT_DATE, et.date_naissance)) as age_etudiant,
                    u.email as etudiant_email
             FROM candidature c
             JOIN offre o ON c.offre_id = o.id
@@ -168,6 +169,26 @@ router.put('/candidatures/:id/valider', authMiddleware, withRole, async (req, re
     }
 });
 
+// PUT - Refuser une candidature
+router.put('/candidatures/:id/refuser', authMiddleware, withRole, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { motif } = req.body;
+
+        await req.dbClient.query(`
+            UPDATE candidature 
+            SET statut = 'REFUSEE RESPONSABLE',
+                justification = $2
+            WHERE id = $1
+        `, [id, motif]);
+
+        res.json({ message: 'Candidature refusée' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur', details: err.message });
+    }
+});
+
 // ==========================================
 // GESTION DES BARÈMES DE RÉMUNÉRATION
 // ==========================================
@@ -176,7 +197,9 @@ router.put('/candidatures/:id/valider', authMiddleware, withRole, async (req, re
 router.get('/baremes', authMiddleware, withRole, async (req, res) => {
     try {
         const result = await req.dbClient.query(`
-            SELECT * FROM bareme_remuneration
+            SELECT id, type_offre as type_contrat, pays, duree_min, duree_max, 
+                   montant_minimal as montant_min, age_min, age_max, annee_contrat
+            FROM bareme_remuneration
             ORDER BY type_offre, duree_min
         `);
         res.json(result.rows);
@@ -189,13 +212,21 @@ router.get('/baremes', authMiddleware, withRole, async (req, res) => {
 // POST - Créer un barème
 router.post('/baremes', authMiddleware, withRole, async (req, res) => {
     try {
-        const { type_offre, pays, duree_min, duree_max, montant_minimal } = req.body;
+        // Accepter type_contrat ou type_offre, montant_min ou montant_minimal
+        const type_offre = req.body.type_offre || req.body.type_contrat;
+        const montant_minimal = req.body.montant_minimal || req.body.montant_min;
+        const { pays, duree_min, duree_max, age_min, age_max, annee_contrat } = req.body;
+
+        // Validation des champs obligatoires
+        if (!type_offre) {
+            return res.status(400).json({ error: 'Le type d\'offre est obligatoire' });
+        }
 
         const result = await req.dbClient.query(`
-            INSERT INTO bareme_remuneration (type_offre, pays, duree_min, duree_max, montant_minimal)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO bareme_remuneration (type_offre, pays, duree_min, duree_max, montant_minimal, age_min, age_max, annee_contrat)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING id
-        `, [type_offre, pays || 'France', duree_min, duree_max, montant_minimal]);
+        `, [type_offre, pays || 'France', duree_min || 0, duree_max, montant_minimal || 0, age_min || null, age_max || null, annee_contrat || null]);
 
         res.status(201).json({
             message: 'Barème créé avec succès',
